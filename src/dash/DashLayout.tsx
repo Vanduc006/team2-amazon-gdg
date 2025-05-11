@@ -14,8 +14,9 @@ const DashLayout = () => {
             sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}>
             <div className="flex items-center justify-between h-16 px-6">
-            <h2 className="text-xl font-semibold cursor-pointer flex items-center justify-content-center">
+            <h2 className="gap-2 text-xl font-semibold cursor-pointer flex items-center justify-content-center">
                 {/* <img src="/favicon.svg" className="w-8 h-8 rounded-md mr-2"/> */}
+                <img src='/favicon.svg' className='w-10 h-10 rounded-md'/>
                 GDG TEAM 2
             </h2>
                 <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(false)}>
