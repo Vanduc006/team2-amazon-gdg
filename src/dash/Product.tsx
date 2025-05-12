@@ -21,16 +21,30 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 // import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { cn } from '@/lib/utils'
+// import {
+//   Dialog,
+//   DialogContent,
+//   DialogDescription,
+//   DialogHeader,
+//   DialogTitle,
+//   DialogTrigger,
+// } from "@/components/ui/dialog"
+
 
 const Product = () => {
   const testData = productData.slice(0,1000)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
-  const [count,setCount] = useState<any>(10)
+  const [filter,setFilter] = useState<string>("category")
+  const [selectedRating, setSelectRating] = useState<string>("asc");
+  const [count,setCount] = useState<any>(10) 
+
   // Extract unique categories
   const handleLoadMore = () => {
     setCount(count + 10)
   }
+
   const categories = useMemo(() => {
     const categorySet = new Set<string>()
     testData.forEach((product) => {
@@ -42,17 +56,49 @@ const Product = () => {
     return ["all", ...Array.from(categorySet)]
   }, [])
 
+
   // Filter products based on search and category
   const filteredProducts = useMemo(() => {
-    return testData.filter((product) => {
-      const matchesSearch = product.product_name.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesCategory =
-        selectedCategory === "all" || (product.category && product.category.startsWith(selectedCategory))
-      return matchesSearch && matchesCategory
-    })
-  }, [searchTerm, selectedCategory])
 
-  // Prepare data for charts
+    const categoryFiltered = testData.filter((product) => {
+      const matchesSearch = product.product_name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory =
+        selectedCategory === "all" ||
+        (product.category && product.category.startsWith(selectedCategory));
+      return matchesSearch && matchesCategory;
+    });
+
+    if (filter === "rating") {
+      return [...categoryFiltered].sort((a, b) => {
+        const ratingA = Number(a.rating) || 0;
+        const ratingB = Number(b.rating) || 0;
+        return selectedRating === "asc" ? ratingA - ratingB : ratingB - ratingA;
+      });
+    }
+  
+    if (filter === "rating_count") {
+      return [...categoryFiltered].sort((a, b) => {
+        const countA = Number((a.rating_count as string)?.toString().replace(/,/g, "")) || 0;
+        const countB = Number((b.rating_count as string)?.toString().replace(/,/g, "")) || 0;
+        return selectedRating === "asc" ? countA - countB : countB - countA;
+      });
+    }
+  
+    if (filter === "price") {
+      return [...categoryFiltered].sort((a, b) => {
+        const priceA = Number(a.discounted_price?.replace(/[₹,]/g, "")) || 0;
+        const priceB = Number(b.discounted_price?.replace(/[₹,]/g, "")) || 0;
+        return selectedRating === "asc" ? priceA - priceB : priceB - priceA;
+      });
+    }
+
+    return categoryFiltered;
+  }, [searchTerm, selectedCategory, filter, selectedRating, testData]);
+  
+
+
+
+  //review
   const ratingDistribution = useMemo(() => {
     const distribution: Record<string, number> = {}
     filteredProducts.forEach((product) => {
@@ -106,11 +152,17 @@ const Product = () => {
 
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-6">Product Summary</h1>
+      <h1 className="font-bold mb-6 flex">
+        <div className='text-3xl'>Product Summary</div>
+
+      </h1>
 
       {/* Search and Filter */}
+
+
+
       <div className="flex flex-col md:flex-row gap-4 mb-8">
-        <div className="relative flex-1">
+        <div className="relative flex-1 bg-gray-200">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search products..."
@@ -119,30 +171,89 @@ const Product = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-full md:w-[200px]">
-            <SelectValue placeholder="Category" />
+
+        <Select 
+        // value={selectedCategory} 
+        // onValueChange={setSelectedCategory}
+        value={filter} 
+        onValueChange={setFilter}
+        >
+          <SelectTrigger className="w-full md:w-[200px] bg-gray-200">
+            <SelectValue placeholder="Filter type" />
           </SelectTrigger>
-          <SelectContent>
-            {categories.map((category) => (
-              <SelectItem key={category} value={category}>
+          <SelectContent className='bg-gray-200'>
+            <SelectItem value='category'> 
+              By category
+            </SelectItem>
+
+            <SelectItem value='rating'> 
+              By rating
+            </SelectItem>
+
+            <SelectItem value='rating_count'> 
+              By rating count
+            </SelectItem>
+
+            <SelectItem value='price'> 
+              By price
+            </SelectItem>            
+            {/* {categories.map((category) => (
+              <SelectItem key={category} value={category} className='hover:bg-gray-300 hover:scale-[1.02]'>
                 {category === "all" ? "All Categories" : category}
               </SelectItem>
-            ))}
+            ))} */}
           </SelectContent>
         </Select>
+
+        <div>
+          {filter == "category" && 
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-full md:w-[200px] bg-gray-200">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent className='bg-gray-200'>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category} className='hover:bg-gray-300 hover:scale-[1.02]'>
+                    {category === "all" ? "All Categories" : category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>     
+          }
+
+          {(filter == "rating" || filter == "rating_count" || filter == "price") && 
+            <Select value={selectedRating} onValueChange={setSelectRating}>
+              <SelectTrigger className="w-full md:w-[200px] bg-gray-200">
+                <SelectValue placeholder="Low to High" />
+              </SelectTrigger>
+              <SelectContent className='bg-gray-200'>
+                {/* {categories.map((category) => (
+                  <SelectItem key={category} value={category} className='hover:bg-gray-300 hover:scale-[1.02]'>
+                    {category === "all" ? "All Categories" : category}
+                  </SelectItem>
+                ))} */}
+                <SelectItem value='asc'>Low to High</SelectItem>
+                <SelectItem value='desc'>High to Low</SelectItem>
+              </SelectContent>
+            </Select>
+          }
+        </div>
+
+        
+
       </div>
 
       <div className="grid gap-4 md:grid-cols-3 mb-8 mt-8">
-        <Card>
+        <Card className='bg-yellow-200 shadow-xl'>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Total Products</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className=''>
             <div className="text-2xl font-bold">{filteredProducts.length}</div>
           </CardContent>
         </Card>
-        <Card>
+
+        <Card className='bg-lime-200 shadow-xl'>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
           </CardHeader>
@@ -160,7 +271,8 @@ const Product = () => {
             </div>
           </CardContent>
         </Card>
-        <Card>
+
+        <Card className='bg-emerald-200 shadow-xl'>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Average Discount</CardTitle>
           </CardHeader>
@@ -184,7 +296,7 @@ const Product = () => {
         <CardHeader>
           <CardTitle>Products</CardTitle>
           <CardDescription>
-            Showing {filteredProducts.length} of {testData.length} products
+            Showing {count} of {filteredProducts.length} products
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -195,10 +307,68 @@ const Product = () => {
                 <TableHead>STT</TableHead>
                 <TableHead>ID</TableHead>
                 <TableHead>Product</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Price</TableHead>
+                <TableHead className={cn(filter == "category" && "bg-blue-200")}>
+                  Category
+
+                </TableHead>
+                <TableHead className={cn(filter == "price" && "bg-blue-200")}>
+                  <div className='gap-2 flex items-center justify-content-center'>
+                  { filter == "price" &&
+                    <div>
+                      {selectedRating == "asc" ? 
+                        <div>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="w-4 h-4 lucide lucide-arrow-up-narrow-wide-icon lucide-arrow-up-narrow-wide"><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="M11 12h4"/><path d="M11 16h7"/><path d="M11 20h10"/></svg>
+                        </div> :
+
+                        <div>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="w-4 h-4 lucide lucide-arrow-down-wide-narrow-icon lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
+                        </div>
+                      }
+                    </div>
+                  }
+                  Price
+                  </div>
+
+                </TableHead>
                 <TableHead>Discount</TableHead>
-                <TableHead>Rating</TableHead>
+                <TableHead className={cn(filter == "rating" && "bg-blue-200")}>
+                  <div className='gap-2 flex items-center justify-content-center'>
+                  { filter == "rating" &&
+                    <div>
+                      {selectedRating == "asc" ? 
+                        <div>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="w-4 h-4 lucide lucide-arrow-up-narrow-wide-icon lucide-arrow-up-narrow-wide"><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="M11 12h4"/><path d="M11 16h7"/><path d="M11 20h10"/></svg>
+                        </div> :
+
+                        <div>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="w-4 h-4 lucide lucide-arrow-down-wide-narrow-icon lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
+                        </div>
+                      }
+                    </div>
+                  }
+                  Rating
+                  </div>
+
+                </TableHead>
+                <TableHead className={cn(filter == "rating_count" && "bg-blue-200")}>
+                  <div className='gap-2 flex items-center justify-content-center'>
+                  { filter == "rating_count" &&
+                    <div>
+                      {selectedRating == "asc" ? 
+                        <div>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="w-4 h-4 lucide lucide-arrow-up-narrow-wide-icon lucide-arrow-up-narrow-wide"><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="M11 12h4"/><path d="M11 16h7"/><path d="M11 20h10"/></svg>
+                        </div> :
+
+                        <div>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="w-4 h-4 lucide lucide-arrow-down-wide-narrow-icon lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
+                        </div>
+                      }
+                    </div>
+                  }
+                  Rating count
+                  </div>
+
+                </TableHead>
               </TableRow>
             </TableHeader>
 
@@ -236,9 +406,15 @@ const Product = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center">
-                      <span className="mr-1">{product.rating}</span>★
-                      <span className="text-xs text-muted-foreground ml-1">({product.rating_count})</span>
+                      <span className="mr-1 flex items-center justify-content-center">
+                        {product.rating} 
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="ml-2 w-4 h-4 lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>
+                        </span>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="ml-1">{product.rating_count}</span>
+
                   </TableCell>
                 </TableRow>
               ))}
@@ -262,7 +438,7 @@ const Product = () => {
       {/* Charts */}
       <Tabs defaultValue="ratings" className="mb-8 mt-8">
         <TabsList className="mb-4">
-          <TabsTrigger value="ratings">Ratings</TabsTrigger>
+          <TabsTrigger value="ratings" >Ratings</TabsTrigger>
           <TabsTrigger value="discounts">Discounts</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
         </TabsList>
