@@ -87,6 +87,7 @@ const FeedBack = () => {
           <div className='mr-2 font-bold'>
             {product.rating}
           </div>
+
           
           {[...Array(5)].map((_, i) => {
             const rating = Number.parseFloat(product.rating?.toString() || "0")
