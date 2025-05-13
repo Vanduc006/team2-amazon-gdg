@@ -14,7 +14,7 @@ import {
   Pie,
   Cell,
 } from "recharts"
-import { Search } from "lucide-react"
+import { ChevronRight, Search, Star, StarHalf } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -22,6 +22,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Link } from 'react-router-dom'
 // import {
 //   Dialog,
 //   DialogContent,
@@ -35,26 +38,98 @@ import { cn } from '@/lib/utils'
 const Product = () => {
   const testData = productData.slice(0,1456)
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [categoryPath,setCategoryPath] = useState<string[]>([])
+  // const [selectedCategory, setSelectedCategory] = useState("all")
   const [filter,setFilter] = useState<string>("category")
   const [selectedRating, setSelectRating] = useState<string>("asc");
   const [count,setCount] = useState<any>(10) 
 
-  // Extract unique categories
+
   const handleLoadMore = () => {
     setCount(count + 10)
   }
 
-  const categories = useMemo(() => {
-    const categorySet = new Set<string>()
+
+  // get child level category
+  const categoryHierarchy = useMemo(() => {
+    const hierarchy : Record<string, any> = {}
     testData.forEach((product) => {
       if (product.category) {
-        const mainCategory = product.category.split("|")[0]
-        categorySet.add(mainCategory)
+        const categories = product.category.split("|")
+        let currentLevel = hierarchy
+        for (let i = 0; i < categories.length; i++) {
+          const category = categories[i]
+          if (!currentLevel[category]) {
+            currentLevel[category] = {
+              _children : {},
+              _fullPath: categories.slice(0, i+1).join("|"),
+              _count: 0,
+            }
+          }
+
+          currentLevel[category]._count++
+
+          if (i < categories.length -1 ) {
+            currentLevel = currentLevel[category]._children
+          }
+        }
       }
     })
-    return ["all", ...Array.from(categorySet)]
-  }, [])
+
+    return hierarchy
+  },[])
+
+  //product by level
+  const availableCategoriesByLevel = useMemo(() => {
+    const result: Array<{ name: string; fullPath: string; count: number }[]> = []
+    const topLevel = Object.entries(categoryHierarchy).map(([name, data]: [string, any]) => ({
+      name,
+      fullPath: data._fullPath,
+      count: data._count,
+    }))
+    result.push(topLevel)
+    let currentLevel = categoryHierarchy
+    for (let i = 0; i < categoryPath.length; i++) {
+      const category = categoryPath[i]
+      if (currentLevel[category]) {
+        currentLevel = currentLevel[category]._children
+        if (Object.keys(currentLevel).length > 0) {
+          const nextLevel = Object.entries(currentLevel).map(([name, data]: [string, any]) => ({
+            name,
+            fullPath: data._fullPath,
+            count: data._count,
+          }))
+          result.push(nextLevel)
+        }
+      } else {
+        break
+      }
+    }
+
+    return result
+  }, [categoryHierarchy, categoryPath])
+
+  // Get current category full path for filtering
+  const currentCategoryFullPath = useMemo(() => {
+    if (categoryPath.length === 0) return ""
+
+    let current = categoryHierarchy
+    let path = ""
+
+    for (let i = 0; i < categoryPath.length; i++) {
+      const category = categoryPath[i]
+      if (current[category]) {
+        path = current[category]._fullPath
+        if (i < categoryPath.length - 1) {
+          current = current[category]._children
+        }
+      } else {
+        return path
+      }
+    }
+
+    return path
+  }, [categoryHierarchy, categoryPath])
 
 
   // Filter products based on search and category
@@ -62,9 +137,15 @@ const Product = () => {
 
     const categoryFiltered = testData.filter((product) => {
       const matchesSearch = product.product_name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory =
-        selectedCategory === "all" ||
-        (product.category && product.category.startsWith(selectedCategory));
+      // const matchesCategory =
+      //   selectedCategory === "all" ||
+      //   (product.category && product.category.startsWith(selectedCategory));
+
+      if (categoryPath.length === 0) {
+        return matchesSearch
+      }
+
+      const matchesCategory = product.category && product.category.startsWith(currentCategoryFullPath)
       return matchesSearch && matchesCategory;
     });
 
@@ -93,7 +174,7 @@ const Product = () => {
     }
 
     return categoryFiltered;
-  }, [searchTerm, selectedCategory, filter, selectedRating, testData]);
+  }, [searchTerm, filter, selectedRating, testData,categoryPath,currentCategoryFullPath]);
   
 
 
@@ -150,10 +231,44 @@ const Product = () => {
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82ca9d"]
 
+   // Handle category selection at a specific level
+  const handleCategorySelect = (level: number, category: string) => {
+    // If selecting at current level, just add to path
+    if (level === categoryPath.length) {
+      setCategoryPath([...categoryPath, category])
+    }
+    // If selecting at a previous level, truncate path and add new selection
+    else if (level < categoryPath.length) {
+      setCategoryPath([...categoryPath.slice(0, level), category])
+    }
+  }
+
+  // Reset category filters
+  const resetCategoryFilter = () => {
+    setCategoryPath([])
+  }
+
+  // Debug function to check if a level has subcategories
+  const hasSubcategories = (level: number): boolean => {
+    if (level >= categoryPath.length) return false
+
+    let current = categoryHierarchy
+    for (let i = 0; i <= level; i++) {
+      if (i === level) {
+        return Object.keys(current[categoryPath[i]]?._children || {}).length > 0
+      }
+      current = current[categoryPath[i]]?._children || {}
+    }
+    return false
+  }
+
+
+
+  //open review for each product
   return (
     <div className="container mx-auto py-10">
       <h1 className="font-bold mb-6 flex">
-        <div className='text-3xl'>Product Summary</div>
+        <div className='text-3xl'>Product Screen</div>
 
       </h1>
 
@@ -206,20 +321,7 @@ const Product = () => {
         </Select>
 
         <div>
-          {filter == "category" && 
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full md:w-[200px] bg-gray-200">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent className='bg-gray-200'>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category} className='hover:bg-gray-300 hover:scale-[1.02]'>
-                    {category === "all" ? "All Categories" : category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>     
-          }
+          
 
           {(filter == "rating" || filter == "rating_count" || filter == "price") && 
             <Select value={selectedRating} onValueChange={setSelectRating}>
@@ -238,9 +340,97 @@ const Product = () => {
             </Select>
           }
         </div>
+      </div>
 
-        
+      <div>
+        {filter == "category" && 
+          <div className="flex flex-wrap gap-2 items-center">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetCategoryFilter}
+                className={categoryPath.length === 0 ? "bg-primary/10" : ""}
+              >
+                Reset
+              </Button>
 
+              {/* Dropdown for each level in the hierarchy */}
+              {availableCategoriesByLevel.map((categories, level) => (
+                <div key={level} className="flex items-center">
+                  {level > 0 && <ChevronRight className="h-4 w-4 mx-1 text-muted-foreground" />}
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={level < categoryPath.length ? "bg-primary/10" : ""}
+                      >
+                        {level < categoryPath.length
+                          ? categoryPath[level]
+                          : level === 0
+                            ? "Select Category"
+                            : "Choose next"}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56 max-h-[300px] overflow-y-auto bg-gray-200">
+                      <DropdownMenuLabel>
+                        {level === 0 ? "Main Categories" : `${categoryPath[level - 1]} Subcategories`}
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuGroup>
+                        {categories.length > 0 ? (
+                          categories.map((category) => (
+                            <DropdownMenuItem
+                              key={category.name}
+                              onClick={() => handleCategorySelect(level, category.name)}
+                              className={categoryPath[level] === category.name ? "bg-primary/10" : ""}
+                            >
+                              {category.name}
+                              <span className="ml-auto text-xs text-muted-foreground">({category.count})</span>
+                            </DropdownMenuItem>
+                          ))
+                        ) : (
+                          <DropdownMenuItem disabled>No subcategories available</DropdownMenuItem>
+                        )}
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ))}
+
+              {/* Add an extra dropdown if the current level has subcategories but isn't shown yet */}
+              {categoryPath.length > 0 &&
+                hasSubcategories(categoryPath.length - 1) &&
+                availableCategoriesByLevel.length === categoryPath.length && (
+                  <div className="flex items-center">
+                    <ChevronRight className="h-4 w-4 mx-1 text-muted-foreground" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        // This is a placeholder - clicking this should open the dropdown
+                        // but we need to ensure the data is loaded first
+                      }}
+                    >
+                      {`Select Level ${categoryPath.length + 1}`}
+                    </Button>
+                  </div>
+                )}
+          </div>
+              // <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              //   <SelectTrigger className="w-full md:w-[200px] bg-gray-200">
+              //     <SelectValue placeholder="Category" />
+              //   </SelectTrigger>
+              //   <SelectContent className='bg-gray-200'>
+              //     {categories.map((category) => (
+              //       <SelectItem key={category} value={category} className='hover:bg-gray-300 hover:scale-[1.02]'>
+              //         {category === "all" ? "All Categories" : category}
+              //       </SelectItem>
+              //     ))}
+              //   </SelectContent>
+              // </Select>     
+        }
       </div>
 
       <div className="grid gap-4 md:grid-cols-3 mb-8 mt-8">
@@ -291,7 +481,7 @@ const Product = () => {
           </CardContent>
         </Card>
       </div>
-        
+      
       <Card>
         <CardHeader>
           <CardTitle>Products</CardTitle>
@@ -369,6 +559,9 @@ const Product = () => {
                   </div>
 
                 </TableHead>
+                <TableHead>
+                  User Feedback
+                </TableHead>
               </TableRow>
             </TableHeader>
 
@@ -380,6 +573,7 @@ const Product = () => {
                   <TableCell className='font-medium'>
                     {product.product_id}
                   </TableCell>
+
                   <TableCell className="font-medium flex items-center justify-content-center gap-4">
                     <img
                       src={product.img_link && "https://www.svgrepo.com/show/508699/landscape-placeholder.svg"}
@@ -392,6 +586,7 @@ const Product = () => {
                       </div>
                     </div>
                   </TableCell>
+
                   <TableCell>{product.category?.split("|")[0]}</TableCell>
                   <TableCell>
                     <div className="flex flex-col">
@@ -405,16 +600,34 @@ const Product = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center">
+                    {/* <div className="flex items-center">
                       <span className="mr-1 flex items-center justify-content-center">
                         {product.rating} 
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="ml-2 w-4 h-4 lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>
                         </span>
-                    </div>
+                    </div> */}
+                    <div className="flex items-center mr-2">
+                      <div className='mr-2'>{product.rating}</div>
+                    {[...Array(5)].map((_, i) => {
+                      const rating = Number.parseFloat(product.rating?.toString() || "0")
+                      if (i < Math.floor(rating)) {
+                        return <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      } else if (i === Math.floor(rating) && rating % 1 >= 0.5) {
+                        return <StarHalf key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      } else {
+                        return <Star key={i} className="h-4 w-4 text-gray-300" />
+                      }
+                    })}
+                  </div>
                   </TableCell>
                   <TableCell>
                     <span className="ml-1">{product.rating_count}</span>
 
+                  </TableCell>
+                  <TableCell>
+                    <Link to={'/feedback?product_id='+ product.product_id + '&product_name='+product.product_name}>
+                      <div className='bg-gray-200 px-2 rounded-md text-center font-bold py-1 hover:scale-[1.09]'>View</div>
+                    </Link>
                   </TableCell>
                 </TableRow>
               ))}
