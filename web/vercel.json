@@ -1,6 +1,15 @@
 {
-    "rewrites": [
-      { "source": "/(.*)", "destination": "/" }
-    ]
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ],
+  "github": {
+    "deployments": {
+      "preview": false
+    }
   }
+}
+
   
