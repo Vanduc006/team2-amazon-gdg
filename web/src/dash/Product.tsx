@@ -43,6 +43,7 @@ const Product = () => {
   const [filter,setFilter] = useState<string>("category")
   const [selectedRating, setSelectRating] = useState<string>("asc");
   const [count,setCount] = useState<any>(10) 
+  const [level,setLevel] = useState<number>(0)
 
 
   const handleLoadMore = () => {
@@ -383,7 +384,10 @@ const Product = () => {
                           categories.map((category) => (
                             <DropdownMenuItem
                               key={category.name}
-                              onClick={() => handleCategorySelect(level, category.name)}
+                              onClick={() => {
+                                setLevel(level)
+                                handleCategorySelect(level, category.name)
+                              }}
                               className={categoryPath[level] === category.name ? "bg-primary/10" : ""}
                             >
                               {category.name}
@@ -568,7 +572,7 @@ const Product = () => {
             <TableBody>
               {filteredProducts.slice(0, count).map((product,index) => (
                 <TableRow key={product.product_id} >
-                  <TableCell className='font-medium'>{index}</TableCell>
+                  <TableCell className='font-medium'>{index+1}</TableCell>
 
                   <TableCell className='font-medium'>
                     {product.product_id}
@@ -587,7 +591,13 @@ const Product = () => {
                     </div>
                   </TableCell>
 
-                  <TableCell>{product.category?.split("|")[0]}</TableCell>
+                  <TableCell>
+                    <div className={cn(filter == "category" && "bg-blue-50 rounded-md","p-1")}>
+                      {product.category?.split("|")[level]}
+                    </div>
+                    
+                    {/* {categoryPath} */}
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
                       <span className="font-medium">{product.discounted_price}</span>
