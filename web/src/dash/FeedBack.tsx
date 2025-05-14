@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { productData } from './product'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Star, StarHalf } from 'lucide-react'
@@ -44,13 +44,13 @@ const FeedBack = () => {
 
     let ans = 0;
     let maxDiff = 0;
-    let mismatchIndex = 0;
 
     // const userIdLen = userIDs.length;
     // const reviewIdLen = reviewIDs.length;
     const reviewTitleLen = reviewTitles.length;
     // const reviewContentLen = reviewContents.length;
     const userNameLen = userNames.length;
+    let mismatchIndex = 0;
 
     if (reviewTitleLen !== userNameLen) {
       const diff = Math.abs(reviewTitleLen - userNameLen);
