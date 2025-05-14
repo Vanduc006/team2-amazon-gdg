@@ -7,7 +7,7 @@ const FeedBack = () => {
   const [searchParams] = useSearchParams()
   const productID = searchParams.get('product_id')
   const productName = searchParams.get('product_name')
-  const testData = productData.slice(0, 10)
+  const testData = productData.slice(0,1456)
 
   const product = useMemo(() => {
     if (!productID) return null
