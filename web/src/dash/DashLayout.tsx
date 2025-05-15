@@ -42,7 +42,7 @@ const DashLayout = () => {
                             <Button variant="ghost" className="w-full justify-start gap-2 hover:bg-gray-500 hover:text-white">
                                 <div className="flex items-center justify-content-center">
                                     <Plus className="h-5 w-5 mr-2" />
-                                    Feedback
+                                    User Virtual
                                 </div>
                             </Button>
                         </Link>
@@ -73,7 +73,7 @@ const DashLayout = () => {
 
                 </div>
                 <div className="flex items-center font-bold">
-                    <span className="text-gray-500 text-lg">IDK</span>
+                    <span className="text-gray-500 text-lg">AMAZON ELECTRONICS ANALYSIS</span>
 
                 </div>
             </header>

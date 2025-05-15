@@ -1,9 +1,15 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { productData } from './product'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Star, StarHalf } from 'lucide-react'
+import { Tabs, TabsContent } from '@radix-ui/react-tabs'
+import { TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { NewFeedback } from '@/service/FeedbackList'
+// import { BeatLoader } from 'r'
+import { BeatLoader } from "react-spinners";
 
-const FeedBack = () => {
+const UserVirtual = () => {
   const [searchParams] = useSearchParams()
   const productID = searchParams.get('product_id')
   const productName = searchParams.get('product_name')
@@ -51,7 +57,7 @@ const FeedBack = () => {
     // const reviewContentLen = reviewContents.length;
     const userNameLen = userNames.length;
     let mismatchIndex = 0;
-
+    mismatchIndex = 0
     if (reviewTitleLen !== userNameLen) {
       const diff = Math.abs(reviewTitleLen - userNameLen);
       if (diff > maxDiff) {
@@ -61,7 +67,8 @@ const FeedBack = () => {
       ans++;
     }
 
-    console.log("Số lượng lỗi length mismatch:", ans);
+    // console.log("Số lượng lỗi length mismatch:", ans);
+    console.log(mismatchIndex)
 
     if (ans > 0) {
       console.log("Chiều dài review_title:", reviewTitles.length);
@@ -93,11 +100,11 @@ const FeedBack = () => {
         {reviews.map((review, index) => (
           <div
             key={index}
-            className="p-3 border rounded bg-white shadow-sm w-full"
+            className="p-2 rounded-md bg-gray-200 shadow-md w-full"
           >
-            <div className="font-bold text-sm p-2 bg-blue-200 w-fit ml-auto rounded-md">
+            {/* <div className="font-bold text-sm p-2 bg-blue-200 w-fit ml-auto rounded-md">
               Badge : ???
-            </div>
+            </div> */}
             <div className="font-semibold text-blue-600">{review.name}</div>
             <div className="text-gray-800 font-medium">{review.title}</div>
             <div className="text-sm text-gray-600">{review.content}</div>
@@ -106,6 +113,44 @@ const FeedBack = () => {
       </div>
     );
   }
+
+  const initReview = {
+    username : "",
+    title : "",
+    content : "",
+  }
+  const [content,setContent] = useState(initReview)
+  const [disable,setDisable] = useState<boolean>(false)
+  const handleChange = (e:any) => {
+    const {name, value} = e.target
+    setContent({...content, [name] : value})
+    // console.log(content)
+
+  }
+
+  const handleSubmit = async () => {
+    if (content.username === "" || content.title === "" || content.content === "") {
+      console.log('please full fill');
+      alert("Please full fill all input box in form");
+      return;
+    }
+
+    setDisable(true); 
+
+    try {
+      const data = await NewFeedback(content.username, content.title, content.content, product?.product_id);
+      console.log(data);
+      alert("Send feedback success")
+
+    } catch (error) {
+      console.error("Error sending feedback:", error);
+      alert("Failed to send feedback");
+    }
+
+    setDisable(false);
+  };
+
+
 
 
   //check data
@@ -228,45 +273,104 @@ const FeedBack = () => {
         </a>}
       </div>
 
-      <h1 className="text-3xl font-bold mb-6">Customer Review</h1>
+      <h1 className="text-3xl font-bold mb-6">Review & Recommend</h1>
 
-      {product && 
-      <div className="text-sm mb-4 items-center justify-cotent-center ">
-        Review for product ID:
-        <div className="ml-2 font-mono p-2 rounded bg-gray-200 mt-2 inline-block">
-          {productID}
-        </div>
-        <div className="mt-1 flex items-center justify-content-center mt-2">
-          <div className='mr-2 font-bold'>
-            {product.rating}
-          </div>
+      <Tabs defaultValue='review'>
+        <TabsList className="mb-4">
+          <TabsTrigger value="review" >Review</TabsTrigger>
+          <TabsTrigger value="recommend">Recommend</TabsTrigger>
+        </TabsList>
 
-          
-          {[...Array(5)].map((_, i) => {
-            const rating = Number.parseFloat(product.rating?.toString() || "0")
-            if (i < Math.floor(rating)) {
-              return <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            } else if (i === Math.floor(rating) && rating % 1 >= 0.5) {
-              return <StarHalf key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            } else {
-              return <Star key={i} className="h-4 w-4 text-gray-300" />
+        <TabsContent value='review'>
+          {product && 
+            <div className="text-sm mb-4 items-center justify-cotent-center ">
+              Review for product ID:
+              <div className="ml-2 font-mono p-2 rounded bg-gray-200 mt-2 inline-block">
+                {productID}
+              </div>
+
+              <Dialog>
+                <DialogTrigger className='w-fit ml-5 cursor-pointer font-mono p-2 rounded-md bg-gray-200 inline-block'>
+                  Give us feedback
+                </DialogTrigger>
+                
+                <DialogContent className='bg-white'>
+                  <DialogHeader>
+                    <DialogTitle>Please full fill this form</DialogTitle>
+                    <DialogDescription>
+                      <div className='text-sm font-mono mt-2 border-b w-fit'>Your name :</div>
+                      <input 
+                        name="username"  placeholder="Your name" type="text" 
+                        className='p-2 bg-gray-200 text-black mt-1 w-full rounded-md'
+                        value={content.username}
+                        onChange={handleChange}
+                      />
+                      <div className='text-sm font-mono mt-2 border-b w-fit'>Do you statify whith prduct ?</div>
+                      <input 
+                      name="title" value={content.title}
+                      onChange={handleChange}
+                      placeholder="Tell us" type="text" className='p-2 bg-gray-200 text-black mt-1 w-full rounded-md'/>
+                      <div className='text-sm font-mono mt-2 border-b w-fit'>Tell us detail for better growth !</div>
+                      <input 
+                      name="content" value={content.content}
+                      onChange={handleChange}
+                      placeholder="Tell us more..." type="text" className='p-2 bg-gray-200 text-black mt-1 w-full rounded-md'/>
+                    </DialogDescription>
+                  </DialogHeader>
+                      <button 
+                      disabled={disable}
+                      onClick={handleSubmit}
+                      className='ml-auto mr-2 w-fit p-2 bg-gray-200 rounded-md text-sm font-mono font-bold cursor-pointer hover:scale-[1.09] flex items-center justify-content-center'>
+                        Send feedback 
+                        {disable && <BeatLoader size={10} />}
+                      </button>
+
+                  <DialogFooter className="sm:justify-start">
+                    
+                    <DialogClose asChild>
+                      <button 
+                      disabled={disable}
+                      className='w-fit p-2 bg-gray-200 rounded-md text-sm font-mono font-bold cursor-pointer hover:scale-[1.09] hover:bg-gray-500'>Quit</button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+                
+              </Dialog>
+
+              <div className="mt-1 flex items-center justify-content-center mt-2">
+                <div className='mr-2 font-bold'>
+                  {product.rating}
+                </div>
+
+                
+                {[...Array(5)].map((_, i) => {
+                  const rating = Number.parseFloat(product.rating?.toString() || "0")
+                  if (i < Math.floor(rating)) {
+                    return <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  } else if (i === Math.floor(rating) && rating % 1 >= 0.5) {
+                    return <StarHalf key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  } else {
+                    return <Star key={i} className="h-4 w-4 text-gray-300" />
+                  }
+                })}
+                <div className='ml-2 text-gray-500'>({product.rating_count})</div>
+              </div>
+              <div className="font-bold text-lg mt-2">{productName}</div>
+            </div>
             }
-          })}
-          <div className='ml-2 text-gray-500'>({product.rating_count})</div>
-        </div>
-        <div className="font-bold text-lg mt-2">{productName}</div>
-      </div>
-      }
 
-      {product ? (
-        <Review data={product as ReviewData} />
-      ) : (
-        <p className="text-red-500 font-semibold">
-          Please go to Product page then click 'View' for each Product to see Customer Feedback
-        </p>
-      )}
+            {product ? (
+              <Review data={product as ReviewData} />
+            ) : (
+              <p className="text-red-500 font-semibold">
+                Please go to Product page then click 'View' for each Product to see Customer Feedback
+              </p>
+            )}
+        </TabsContent>
+      </Tabs>
+      
     </div>
   )
 }
 
-export default FeedBack
+export default UserVirtual

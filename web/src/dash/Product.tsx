@@ -14,7 +14,7 @@ import {
   Pie,
   Cell,
 } from "recharts"
-import { ChevronRight, Search, Star, StarHalf } from "lucide-react"
+import { Bell, BellDot, ChevronRight, Search, Star, StarHalf } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -137,7 +137,7 @@ const Product = () => {
   const filteredProducts = useMemo(() => {
 
     const categoryFiltered = testData.filter((product) => {
-      const matchesSearch = product.product_name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = product.product_name.toLowerCase().includes(searchTerm.toLowerCase()) || product.product_id.toLowerCase().includes(searchTerm.toLowerCase());
       // const matchesCategory =
       //   selectedCategory === "all" ||
       //   (product.category && product.category.startsWith(selectedCategory));
@@ -268,9 +268,13 @@ const Product = () => {
   //open review for each product
   return (
     <div className="container mx-auto py-10">
-      <h1 className="font-bold mb-6 flex">
+      <h1 className="font-bold mb-6 flex items-center justify-content-center">
         <div className='text-3xl'>Product Screen</div>
-
+        <div className='cursor-pointer ml-auto bg-gray-200 rounded-md p-2 hover:scale-[1.09] hover:bg-gray-500 font-mono flex items-center justify-content-center'>
+          <Bell className='w-4 h-4 mr-2'/>
+          <BellDot className='w-4 h-4 fill-red-500 mr-2'/>
+          Notification
+        </div>
       </h1>
 
       {/* Search and Filter */}
@@ -564,7 +568,7 @@ const Product = () => {
 
                 </TableHead>
                 <TableHead>
-                  User Feedback
+                  See product as Customer
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -635,7 +639,7 @@ const Product = () => {
 
                   </TableCell>
                   <TableCell>
-                    <Link to={'/feedback?product_id='+ product.product_id + '&product_name='+product.product_name}>
+                    <Link to={'/uservirtual?product_id='+ product.product_id + '&product_name='+product.product_name}>
                       <div className='bg-gray-200 px-2 rounded-md text-center font-bold py-1 hover:scale-[1.09]'>View</div>
                     </Link>
                   </TableCell>

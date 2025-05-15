@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import DashLayout from './dash/DashLayout';
 import Home from './dash/Home';
-import FeedBack from './dash/FeedBack';
+import UserVirtual from './dash/UserVirtual';
 import Product from './dash/Product';
 // import { Loader2 } from 'lucide-react';
 
@@ -37,7 +37,7 @@ function App() {
     <Routes>
       <Route path='/' element={<DashLayout />}>
         <Route index element={<Home />} />
-        <Route path='/feedback' element={<FeedBack />} />
+        <Route path='/uservirtual' element={<UserVirtual />} />
         <Route path='/product' element={<Product />} />
       </Route>
     </Routes>
