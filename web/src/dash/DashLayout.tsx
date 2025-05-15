@@ -3,11 +3,13 @@ import { cn } from '../lib/utils'
 import { Menu, Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Link, Outlet } from 'react-router-dom'
+// import { Toaster } from "@/components/ui/sonner"
 
 const DashLayout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false) 
   return (
     <div className='flex h-screen bg-gray-200 text-gray-900'>
+        {/* <Toaster/> */}
         <aside
         className={cn(
             "fixed inset-y-0 z-50 flex w-72 flex-col bg-gray-200 transition-transform lg:static lg:translate-x-0 ",
@@ -38,7 +40,7 @@ const DashLayout = () => {
                     </li>
 
                     <li>
-                        <Link to="/feedback">
+                        <Link to="/uservirtual">
                             <Button variant="ghost" className="w-full justify-start gap-2 hover:bg-gray-500 hover:text-white">
                                 <div className="flex items-center justify-content-center">
                                     <Plus className="h-5 w-5 mr-2" />

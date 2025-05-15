@@ -14,7 +14,7 @@ import {
   Pie,
   Cell,
 } from "recharts"
-import { Bell, BellDot, ChevronRight, Search, Star, StarHalf } from "lucide-react"
+import { Bell, ChevronRight, Search, Star, StarHalf } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -25,6 +25,11 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Link } from 'react-router-dom'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { UseRealtimeReview } from '@/service/FeedbackList'
+import DateFormat from './DateFormat'
+// import { toast } from "sonner"
+
 // import {
 //   Dialog,
 //   DialogContent,
@@ -36,6 +41,7 @@ import { Link } from 'react-router-dom'
 
 
 const Product = () => {
+  // toast("???")
   const testData = productData.slice(0,1456)
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryPath,setCategoryPath] = useState<string[]>([])
@@ -262,19 +268,58 @@ const Product = () => {
     }
     return false
   }
-
-
-
+  
+  const customCustomerReview = UseRealtimeReview()
+  console.log(customCustomerReview)
   //open review for each product
   return (
     <div className="container mx-auto py-10">
       <h1 className="font-bold mb-6 flex items-center justify-content-center">
         <div className='text-3xl'>Product Screen</div>
-        <div className='cursor-pointer ml-auto bg-gray-200 rounded-md p-2 hover:scale-[1.09] hover:bg-gray-500 font-mono flex items-center justify-content-center'>
-          <Bell className='w-4 h-4 mr-2'/>
-          <BellDot className='w-4 h-4 fill-red-500 mr-2'/>
-          Notification
-        </div>
+        <Sheet>
+          <SheetTrigger className='cursor-pointer ml-auto bg-gray-200 rounded-md p-2 hover:scale-[1.09] hover:bg-gray-500 font-mono flex items-center justify-content-center'>
+              <Bell className='w-4 h-4 mr-2'/>
+              {/* <BellDot className='w-4 h-4 fill-red-500 mr-2'/> */}
+              Notification
+          </SheetTrigger>
+          <SheetContent className='bg-white border-0 p-2 w-[400px] sm:w-[540px] overflow-y-auto'>
+            <SheetHeader>
+              <SheetTitle>Newest product review from customer</SheetTitle>
+              <SheetDescription>
+                <div className="space-y-4 mt-4">
+                  {customCustomerReview.map((review, index) => (
+                    <div
+                      key={index}
+                      className="p-2 rounded-md bg-gray-200 shadow-md w-full"
+                    >
+                      {/* <div className="font-bold text-sm p-2 bg-blue-200 w-fit ml-auto rounded-md">
+                        Badge : ???
+                      </div> */}
+                      <div className="font-semibold text-blue-600">{review.username}</div>
+                      <div className="text-gray-800 font-medium">{review.title}</div>
+                      <div className="text-sm text-gray-600">{review.content}</div>
+
+                      <div>
+                        <div className='flex p-2 bg-yellow-200 rounded-md mt-2'>
+                          <div className='font-mono font-bold text-sm'>Status process : </div>
+                          {review.status == null ? 
+                            <div>Waiting respone</div> : <div></div>
+                          }
+                        </div>
+                        <div className='flex p-2 bg-yellow-200 rounded-md mt-2'>
+                          <div className='font-mono font-bold text-sm'>Model predict : </div>
+                          {review.predict}
+                        </div>
+                        <div className='font-mono text-gray-500 mt-2'><DateFormat utcTime={review.created_at}/></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </SheetDescription>
+            </SheetHeader>
+          </SheetContent>
+        </Sheet>
+
       </h1>
 
       {/* Search and Filter */}
@@ -285,7 +330,7 @@ const Product = () => {
         <div className="relative flex-1 bg-gray-200">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search products..."
+            placeholder="Search products by Name and ID..."
             className="pl-8"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
