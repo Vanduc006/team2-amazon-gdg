@@ -8,6 +8,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { NewFeedback } from '@/service/FeedbackList'
 // import { BeatLoader } from 'r'
 import { BeatLoader } from "react-spinners";
+import { StarRating } from './StarRating'
 
 const UserVirtual = () => {
   const [searchParams] = useSearchParams()
@@ -125,8 +126,9 @@ const UserVirtual = () => {
     const {name, value} = e.target
     setContent({...content, [name] : value})
     // console.log(content)
-
   }
+
+
 
   const handleSubmit = async () => {
     if (content.username === "" || content.title === "" || content.content === "") {
@@ -138,7 +140,7 @@ const UserVirtual = () => {
     setDisable(true); 
 
     try {
-      const data = await NewFeedback(content.username, content.title, content.content, product?.product_id);
+      const data = await NewFeedback(content.username, content.title, content.content, product?.product_id, userRating);
       console.log(data);
       alert("Send feedback success")
 
@@ -148,10 +150,22 @@ const UserVirtual = () => {
     }
 
     setDisable(false);
+    setContent({
+      username : '',
+      title : '',
+      content : '',
+    })
+    setUserRating(0)
   };
 
 
+  //rating
+  // const [hasRated, setHasRated] = useState<boolean>(false)
+  const [userRating, setUserRating] = useState<number>(0)
 
+  const handleRating = (rating : number ) => {
+    setUserRating(rating)
+  }
 
   //check data
 
@@ -315,8 +329,14 @@ const UserVirtual = () => {
                       name="content" value={content.content}
                       onChange={handleChange}
                       placeholder="Tell us more..." type="text" className='p-2 bg-gray-200 text-black mt-1 w-full rounded-md'/>
+
+                      <div className='mt-2 flex items-center justify-content-center gap-2'>
+                        <div className='font-mono font-bold text-sm'>Give it a star !</div>
+                        <StarRating initialRating={userRating} onChange={handleRating} size="sm"/>
+                      </div>
                     </DialogDescription>
                   </DialogHeader>
+
                       <button 
                       disabled={disable}
                       onClick={handleSubmit}

@@ -14,10 +14,17 @@ const FeedbackList = async():Promise<any[]> => {
 }
 export default FeedbackList
 
-export const NewFeedback = async(username: string, title: string, content: string, productID: any):Promise<any> => {
+export const NewFeedback = async(
+  username: string, 
+  title: string, 
+  content: string, 
+  productID: any,
+  stars : number,
+
+):Promise<any> => {
   const { data, error } = await supabase
   .from('review')
-  .insert({ username: username, title: title,content: content, productID: productID })
+  .insert({ username: username, title: title,content: content, productID: productID, stars: stars })
   if ( error ) {
     console.log(error.message)
     return data || []
@@ -26,6 +33,8 @@ export const NewFeedback = async(username: string, title: string, content: strin
 }
 
 export interface Review {
+  stars : string,
+  productID: string,
   created_at: string;
   id: number;
   username: string;

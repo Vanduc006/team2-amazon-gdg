@@ -28,6 +28,7 @@ import { Link } from 'react-router-dom'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { UseRealtimeReview } from '@/service/FeedbackList'
 import DateFormat from './DateFormat'
+import { StarRating } from './StarRating'
 // import { toast } from "sonner"
 
 // import {
@@ -295,7 +296,11 @@ const Product = () => {
                       {/* <div className="font-bold text-sm p-2 bg-blue-200 w-fit ml-auto rounded-md">
                         Badge : ???
                       </div> */}
-                      <div className="font-semibold text-blue-600">{review.username}</div>
+                      
+                      <div className="font-semibold text-blue-600 flex">
+                        {review.username}
+                        <div className='ml-auto text-gray-500'>{review.productID}</div>
+                      </div>
                       <div className="text-gray-800 font-medium">{review.title}</div>
                       <div className="text-sm text-gray-600">{review.content}</div>
 
@@ -310,7 +315,10 @@ const Product = () => {
                           <div className='font-mono font-bold text-sm'>Model predict : </div>
                           {review.predict}
                         </div>
-                        <div className='font-mono text-gray-500 mt-2'><DateFormat utcTime={review.created_at}/></div>
+                        <div className='font-mono text-gray-500 mt-2 flex items-center justify-content-center'>
+                          <DateFormat utcTime={review.created_at}/>
+                          <StarRating initialRating={Number(review.stars)} readOnly size="sm" className='ml-auto'/>
+                        </div>
                       </div>
                     </div>
                   ))}
