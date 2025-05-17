@@ -44,7 +44,7 @@ const DashLayout = () => {
                             <Button variant="ghost" className="w-full justify-start gap-2 hover:bg-gray-500 hover:text-white">
                                 <div className="flex items-center justify-content-center">
                                     <Plus className="h-5 w-5 mr-2" />
-                                    User Virtual
+                                    User Emulator
                                 </div>
                             </Button>
                         </Link>

@@ -1,5 +1,6 @@
 // import React from 'react'
-import { productData } from './product'
+// import { productData } from './product'
+import { useProductData } from './ProductContext'
 import { useState, useMemo } from "react"
 import {
   BarChart,
@@ -40,10 +41,13 @@ import { StarRating } from './StarRating'
 //   DialogTrigger,
 // } from "@/components/ui/dialog"
 
-
 const Product = () => {
   // toast("???")
-  const testData = productData.slice(0,1456)
+  const { testData, loading, error } = useProductData()
+
+  if (loading) return <div>Loading...</div>
+  if (error) return <div>Error: {error}</div>
+
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryPath,setCategoryPath] = useState<string[]>([])
   // const [selectedCategory, setSelectedCategory] = useState("all")
@@ -200,6 +204,8 @@ const Product = () => {
     }))
   }, [filteredProducts])
 
+
+
   const discountData = useMemo(() => {
     const ranges = [
       { name: "0-20%", range: [0, 20], count: 0 },
@@ -271,7 +277,9 @@ const Product = () => {
   }
   
   const customCustomerReview = UseRealtimeReview()
-  console.log(customCustomerReview)
+  // console.log(customCustomerReview)
+
+
   //open review for each product
   return (
     <div className="container mx-auto py-10">
@@ -509,7 +517,7 @@ const Product = () => {
             <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold flex items-center justify-content-center">
+            <div className="text-2xl font-bold flex items-center justify-content-center gap-2">
               {filteredProducts.length > 0
                 ? (
                     filteredProducts.reduce(
@@ -517,8 +525,18 @@ const Product = () => {
                       0,
                     ) / filteredProducts.length
                   ).toFixed(1)
-                : "N/A"}{" "}
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="ml-2 lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>
+                : "N/A"
+                }{" "}
+                <StarRating 
+                size='md'
+                readOnly
+                initialRating={
+                  filteredProducts.reduce(
+                      (sum, product) => sum + Number.parseFloat(product.rating?.toString() || "0"),
+                      0,
+                    ) / filteredProducts.length}
+                />
+              {/* <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="ml-2 lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg> */}
             </div>
           </CardContent>
         </Card>

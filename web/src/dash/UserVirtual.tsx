@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { productData } from './product'
+// import { productData } from './product'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Star, StarHalf } from 'lucide-react'
 import { Tabs, TabsContent } from '@radix-ui/react-tabs'
@@ -9,12 +9,17 @@ import { NewFeedback } from '@/service/FeedbackList'
 // import { BeatLoader } from 'r'
 import { BeatLoader } from "react-spinners";
 import { StarRating } from './StarRating'
+import { useProductData } from './ProductContext'
 
 const UserVirtual = () => {
   const [searchParams] = useSearchParams()
   const productID = searchParams.get('product_id')
   const productName = searchParams.get('product_name')
-  const testData = productData.slice(0,1456)
+
+  const { testData, loading, error } = useProductData()
+
+  if (loading) return <div>Loading...</div>
+  if (error) return <div>Error: {error}</div>
 
   const product = useMemo(() => {
     if (!productID) return null

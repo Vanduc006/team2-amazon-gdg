@@ -1,7 +1,15 @@
-// import supabase from "./ConnectSupabase"
+import supabase from "./ConnectSupabase"
 
-// const ObjectList = ():Promise<any[]> => {
-//   const { data, error } = 
-// }
+const JsonFileList = async():Promise<any> => {
+    const { data, error } = await supabase
+    .from('object')
+    .select('*')
+    .order('id', { ascending : false})
 
-// export default ObjectList
+    if (error) {
+        console.log('failed get object')
+        return []
+    }
+    return data || []
+}
+export default JsonFileList
