@@ -1,14 +1,23 @@
 from flask import Flask, request, jsonify
 from csv2json import csv2json, csv2json_string  # import từ file khác
 from supabase import create_client
+from flask_cors import CORS
 # import pandas as pd
 import tempfile
 import io
 import os
 
 app = Flask(__name__)
+CORS(app, origins=[
+    "http://127.0.0.1:5173",
+    "https://team2-amazon-gdg.vercel.app"
+    ])
 bucket = 'json'
 supabase = create_client('https://wblqskhiwsfjvxqhnpqg.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibHFza2hpd3NmanZ4cWhucHFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcyOTU4MzcsImV4cCI6MjA2Mjg3MTgzN30.IULd7MH74NnLVmGpXPPQwmmEk4t5KGkCIPoEXoRzXvQ')
+@app.route('/')
+def home():
+    return 'Team 2 GDG webservice !'
+
 @app.route('/convert', methods=['POST'])
 def convert():
     csv = request.files.get('file')
