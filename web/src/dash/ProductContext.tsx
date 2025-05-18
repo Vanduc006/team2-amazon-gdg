@@ -33,16 +33,18 @@ interface ProductDataContextType {
   error?: string  
   dataSourceUrl: string
   setDataSourceUrl: (url: string) => void
+  parent : string
+  setParent : (text : string) => void
 }
 
 const ProductDataContext = createContext<ProductDataContextType | undefined>(undefined)
 
 export const ProductDataProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [productData, setProductData] = useState<ProductData[]>([])
-  const [dataSourceUrl, setDataSourceUrl] = useState<string>('https://default-link.com/output.json')
+  const [dataSourceUrl, setDataSourceUrl] = useState<string>('https://wblqskhiwsfjvxqhnpqg.supabase.co/storage/v1/object/public/json//output.json')
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>()
-
+  const [parent, setParent ] = useState<string>('amazon.csv')
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
@@ -66,7 +68,7 @@ export const ProductDataProvider: React.FC<{children: React.ReactNode}> = ({ chi
   const testData = productData
 
   return (
-    <ProductDataContext.Provider value={{ productData, testData, loading, error,dataSourceUrl, setDataSourceUrl }}>
+    <ProductDataContext.Provider value={{ productData, testData, loading, error,dataSourceUrl, setDataSourceUrl, parent, setParent  }}>
       {children}
     </ProductDataContext.Provider>
   )

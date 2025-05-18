@@ -710,7 +710,7 @@ const Product = () => {
 
                   </TableCell>
                   <TableCell>
-                    <Link to={'/uservirtual?product_id='+ product.product_id + '&product_name='+product.product_name}>
+                    <Link to={'/useremulator?product_id='+ product.product_id + '&product_name='+product.product_name}>
                       <div className='bg-gray-200 px-2 rounded-md text-center font-bold py-1 hover:scale-[1.09]'>View</div>
                     </Link>
                   </TableCell>

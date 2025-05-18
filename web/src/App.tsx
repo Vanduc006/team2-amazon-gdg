@@ -37,7 +37,7 @@ function App() {
     <Routes>
       <Route path='/' element={<DashLayout />}>
         <Route index element={<Home />} />
-        <Route path='/uservirtual' element={<UserVirtual />} />
+        <Route path='/useremulator' element={<UserVirtual />} />
         <Route path='/product' element={<Product />} />
       </Route>
     </Routes>

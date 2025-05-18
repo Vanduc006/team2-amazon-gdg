@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 // import { productData } from './product'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Star, StarHalf } from 'lucide-react'
 import { Tabs, TabsContent } from '@radix-ui/react-tabs'
 import { TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -10,14 +10,18 @@ import { NewFeedback } from '@/service/FeedbackList'
 import { BeatLoader } from "react-spinners";
 import { StarRating } from './StarRating'
 import { useProductData } from './ProductContext'
+import Recommend from '@/service/Recommend'
+// import { Card, CardContent } from '@/components/ui/card'
+
 
 const UserVirtual = () => {
+  const { parent } = useProductData()
+  console.log(parent)
   const [searchParams] = useSearchParams()
   const productID = searchParams.get('product_id')
   const productName = searchParams.get('product_name')
 
   const { testData, loading, error } = useProductData()
-
   if (loading) return <div>Loading...</div>
   if (error) return <div>Error: {error}</div>
 
@@ -89,9 +93,9 @@ const UserVirtual = () => {
 
       console.log("=======================");
       console.log("Chiều dài user_id:", userIDs.length);
-      for (const uid of userIDs) {
-        console.log(uid);
-      }
+      // for (const uid of userIDs) {
+      //   console.log(uid);
+      // }
     }
 
     const reviews = userIDs.map((id, index) => ({
@@ -101,6 +105,7 @@ const UserVirtual = () => {
       content: reviewContents[index],
     }));
 
+    
     return (
       <div className="space-y-4 mt-4">
         {reviews.map((review, index) => (
@@ -171,6 +176,21 @@ const UserVirtual = () => {
   const handleRating = (rating : number ) => {
     setUserRating(rating)
   }
+
+
+  //recommend
+  // const { parent } = useProductData()
+  const [recommend, setRecommend] = useState<any[]>([])
+  const navigate = useNavigate()
+  const handleRecommend = async () => {
+    if (productID) {
+      const data = await Recommend('cosine',productID, '5', parent)
+      setRecommend(data)
+    }
+    // console.log(data)
+    // setRecommend(data)
+  }
+
 
   //check data
 
@@ -277,7 +297,12 @@ const UserVirtual = () => {
   //   // checkInconsistentProducts(productData);
   // }, [productData]);
 
+  const [tab,setTab] = useState<string>('review')
+  // const location = useLocation()
 
+  // useEffect(() => {
+  //   setTab('review')
+  // },[location.pathname])
 
   return (
     <div className="container mx-auto ">
@@ -294,12 +319,87 @@ const UserVirtual = () => {
 
       <h1 className="text-3xl font-bold mb-6">Review & Recommend</h1>
 
-      <Tabs defaultValue='review'>
+      <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="review" >Review</TabsTrigger>
-          <TabsTrigger value="recommend">Recommend</TabsTrigger>
+          {productID ? <TabsTrigger value="recommend" 
+          onClick={() => {
+            handleRecommend()
+          }}>Recommend</TabsTrigger> : 
+          
+          <div></div>
+          }
         </TabsList>
 
+        <TabsContent value='recommend'>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {recommend.length > 0 ? (
+              recommend.map((recProduct,index) => (
+                <div
+                  key={index}
+                  className="rounded-md overflow-hidden hover:shadow-md transition-shadow cursor-pointer bg-gray-200 border-0 p-2 shadow-md"
+                  // onClick={() => router.push(`/product/${recProduct.product_id}`)}
+                  onClick={() => {
+                    setRecommend([])
+                    setTab('review')
+                    navigate('/useremulator?product_id='+ recProduct.product_id + '&product_name='+ recProduct.product_name)
+                  }}
+                >
+                  <div className='text-sm font-bold px-2 rounded-md ml-auto w-fit bg-green-300 mb-1'>{recProduct.discount_percentage}%</div>
+                  <img src="/placeholder.png" className='rounded-md' />
+                  {/* <div className='font-medium text-sm line-camp-2'>{recProduct.product_id}</div> */}
+                  <h3 className="font-medium text-sm line-clamp-2 mb-1 mt-2">{recProduct.product_name}</h3>
+                  <div className="flex items-center mb-2">
+                      <StarRating initialRating={Number(recProduct.rating)} readOnly size="sm" />
+                  </div>
+
+                  <div className='flex items-center justify-content-center gap-2'>
+                    <div className='font-bold text-sm'>₹{recProduct.discounted_price}</div>
+                    <div className='text-sm text-gray-500 line-through'>₹{recProduct.actual_price}</div>
+                  </div>
+
+
+              
+                </div>
+                // <Card
+                //   key={recProduct.product_id}
+                //   className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                //   // onClick={() => router.push(`/product/${recProduct.product_id}`)}
+                // >
+                //   <div className="aspect-square relative bg-white p-4 flex items-center justify-center">
+                //     <img
+                //       src={recProduct.img_link || "/placeholder.svg?height=200&width=200"}
+                //       alt={recProduct.product_name}
+                //       className="max-h-[150px] max-w-full object-contain"
+                //       onError={(e) => {
+                //         e.currentTarget.src = "/placeholder.svg?height=150&width=150"
+                //       }}
+                //     />
+                //     <Badge className="absolute top-2 right-2 bg-green-100 text-green-800 border-green-200">
+                //       {recProduct.discount_percentage}
+                //     </Badge>
+                //   </div>
+                //   <CardContent className="p-4">
+                //     <h3 className="font-medium text-sm line-clamp-2 mb-1">{recProduct.product_name}</h3>
+                //     <div className="flex items-center mb-2">
+                //       <StarRating initialRating={Number(recProduct.rating)} readOnly size="sm" />
+                //     </div>
+                //     <div className="flex items-center gap-2">
+                //       <span className="font-bold">{recProduct.discounted_price}</span>
+                //       <span className="text-xs text-gray-500 line-through">{recProduct.actual_price}</span>
+                //     </div>
+                //   </CardContent>
+                // </Card>
+
+              ))
+            ) : (
+              <div className="gap-2 col-span-full text-center py-8 text-gray-500 flex items-center justify-content-center">
+                Getting recommend list
+                <BeatLoader size={10}/>
+              </div>
+            )}
+          </div>
+        </TabsContent>
         <TabsContent value='review'>
           {product && 
             <div className="text-sm mb-4 items-center justify-cotent-center ">
