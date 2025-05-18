@@ -6,6 +6,7 @@ from flask_cors import CORS
 import tempfile
 import io
 import os
+from recommend import get_product_recommendations
 
 app = Flask(__name__)
 CORS(app, origins=[
@@ -38,6 +39,14 @@ def convert():
 
     try:
         # Upload file từ đường dẫn
+        responsee = supabase.storage.from_('csv').upload(
+            path=csv.filename,
+            file=csv.read(),
+            file_options={
+                "content-type": "text/csv"
+            },
+        )
+
         response = supabase.storage.from_(bucket).upload(
             path=file_name,
             file=tmp_path,
@@ -50,7 +59,8 @@ def convert():
             supabase.table('object')
             .insert({
                 "key" : file_name,
-                "type" : "json"
+                "type" : "json",
+                "parent" : csv.filename
             })
             .execute()
         )
@@ -68,6 +78,19 @@ def convert():
 
     finally:
         os.remove(tmp_path)  # Xóa file tạm sau khi upload
+
+
+@app.route('/recommend', methods=['POST'])
+def create_remmcommend():
+    query = request.args.get('method')
+    product_id = request.args.get('product_id')
+    top_n = request.args.get('top')
+    url = request.args.get('url')
+    if query == 'cosine' :
+        result = get_product_recommendations(product_id=product_id,csv_url=url,top_n=int(top_n))
+        return result
+        # return 'ok',200
+    return 400
 
 
 if __name__ == '__main__':
