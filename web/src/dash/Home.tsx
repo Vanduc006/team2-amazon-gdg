@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom"
 import { Plus } from "lucide-react"
 const Home = () => {
   const navigate = useNavigate()
-  const { setDataSourceUrl, setParent, parent } = useProductData()
+  const { setDataSourceUrl, setParent} = useProductData()
   const [object,setOject] = useState<any[]>([])
   const [file,setFile] = useState<File>()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -101,7 +101,7 @@ const Home = () => {
               <div key={index} className="p-2 gap-2 bg-gray-200 rounded-md mt-2 flex items-center justify-content-center hover:scale-[1.02] cursor-pointer"
               onClick={() => {
                 setParent(file.parent)
-                console.log(parent)
+                // console.log(parent)
                 // console.log(file.parent)
                 setDataSourceUrl("https://wblqskhiwsfjvxqhnpqg.supabase.co/storage/v1/object/public/"+file.type+'//'+file.key)
                 navigate('/product')

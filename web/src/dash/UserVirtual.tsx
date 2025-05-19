@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 // import { productData } from './product'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Star, StarHalf } from 'lucide-react'
@@ -11,12 +11,13 @@ import { BeatLoader } from "react-spinners";
 import { StarRating } from './StarRating'
 import { useProductData } from './ProductContext'
 import Recommend from '@/service/Recommend'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 // import { Card, CardContent } from '@/components/ui/card'
 
 
 const UserVirtual = () => {
   const { parent } = useProductData()
-  console.log(parent)
+  // console.log(parent)
   const [searchParams] = useSearchParams()
   const productID = searchParams.get('product_id')
   const productName = searchParams.get('product_name')
@@ -129,6 +130,7 @@ const UserVirtual = () => {
     username : "",
     title : "",
     content : "",
+    top : "5",
   }
   const [content,setContent] = useState(initReview)
   const [disable,setDisable] = useState<boolean>(false)
@@ -164,6 +166,7 @@ const UserVirtual = () => {
       username : '',
       title : '',
       content : '',
+      top : '5',
     })
     setUserRating(0)
   };
@@ -181,123 +184,34 @@ const UserVirtual = () => {
   //recommend
   // const { parent } = useProductData()
   const [recommend, setRecommend] = useState<any[]>([])
+  const [method,setMethod] = useState<string>('cosine')
+  const [tab,setTab] = useState<string>('review')
+  
+  // const [top_n,setTop_n] = useState<string>('')
   const navigate = useNavigate()
   const handleRecommend = async () => {
-    if (productID) {
-      const data = await Recommend('cosine',productID, '5', parent)
-      setRecommend(data)
+    if (productID && content.top !== '') {
+      setDisable(true)
+      try {
+        const data = await Recommend(method ,productID ,content.top , parent)
+        setRecommend(data)
+      } catch (error) {
+        return error
+      }
+      setDisable(false)
+
     }
+    // alert()
     // console.log(data)
     // setRecommend(data)
   }
 
-
-  //check data
-
-    // const lengths = [
-    //   userIDs.length,
-    //   userNames.length,
-    //   reviewTitles.length,
-    //   reviewContents.length
-    // ];
-
-    // const isConsistent = lengths.every((len) => len === lengths[0]);
-
-    // if (!isConsistent) {
-    //   console.error('❌ Dữ liệu không đồng bộ:');
-    //   console.log(product?.product_id)
-    //   console.log(`user_id: ${userIDs.length}`);
-    //   console.log(`user_name: ${userNames.length}`);
-    //   console.log(`review_title: ${reviewTitles.length}`);
-    //   console.log(`review_content: ${reviewContents.length}`);
-    // }
-
-  // const checkInconsistentProducts = (products: any[]) => {
-  //   let n = 0
-  //   const result: {
-  //     index: number;
-  //     product_id: string;
-  //     fieldLengths: Record<string, number>;
-  //   }[] = [];
-
-  //   products.forEach((product, index) => {
-  //     const fieldLengths = {
-  //       user_id: product.user_id?.split(',').length ?? 0,
-  //       user_name: product.user_name?.split(',').length ?? 0,
-  //       review_id: product.review_id?.split(',').length ?? 0,
-  //       review_title: product.review_title?.split(',').length ?? 0,
-  //       review_content: product.review_content?.split(',').length ?? 0,
-  //     };
-
-  //     const uniqueLengths = new Set(Object.values(fieldLengths));
-
-  //     if (uniqueLengths.size !== 1) {
-  //       result.push({
-  //         index,
-  //         product_id: product.product_id,
-  //         fieldLengths,
-  //       });
-  //     }
-  //   });
-
-  //   console.log('🛑 Các sản phẩm có dữ liệu không đồng đều:');
-  //   result.forEach(({ index, product_id, fieldLengths }) => {
-  //     n = n + 1
-  //     console.log(`- Index ${index} | Product ID: ${product_id}`);
-  //     console.log('  Field lengths:', fieldLengths);
-  //   });
-
-  //   if (result.length === 0) {
-  //     console.log('✅ Tất cả sản phẩm đều có số lượng trường thống nhất.');
-  //   }
-  //   console.log(n)
-  //   return result;
-  // };
-
-  // const checkUserIdAndNameMismatch = (products: any[]) => {
-  //   const mismatches: {
-  //     index: number;
-  //     product_id: string;
-  //     user_id_length: number;
-  //     user_name_length: number;
-  //   }[] = [];
-
-  //   products.forEach((product, index) => {
-  //     const userIds = product.user_id?.split(',') ?? [];
-  //     const userNames = product.user_name?.split(',') ?? [];
-
-  //     if (userIds.length !== userNames.length) {
-  //       mismatches.push({
-  //         index,
-  //         product_id: product.product_id,
-  //         user_id_length: userIds.length,
-  //         user_name_length: userNames.length,
-  //       });
-  //     }
-  //   });
-
-  //   if (mismatches.length === 0) {
-  //     console.log("✅ Tất cả `user_id` và `user_name` đều khớp nhau.");
-  //   } else {
-  //     console.log("🛑 Những sản phẩm có số lượng `user_id` và `user_name` KHÔNG KHỚP:");
-  //     mismatches.forEach((m) => {
-  //       console.log(
-  //         `- Index ${m.index} | Product ID: ${m.product_id} | user_id: ${m.user_id_length} | user_name: ${m.user_name_length}`
-  //       );
-  //     });
-  //   }
-
-  //   return mismatches;
-  // };
+  useEffect(() => {
+    console.log(content.top)
+    console.log(method)
+  },[content.top,method])
 
 
-  // useEffect(() => {
-  //   // Giả sử bạn có mảng `products` đã load xong
-  //   checkUserIdAndNameMismatch(productData)
-  //   // checkInconsistentProducts(productData);
-  // }, [productData]);
-
-  const [tab,setTab] = useState<string>('review')
   // const location = useLocation()
 
   // useEffect(() => {
@@ -322,16 +236,46 @@ const UserVirtual = () => {
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="review" >Review</TabsTrigger>
-          {productID ? <TabsTrigger value="recommend" 
-          onClick={() => {
-            handleRecommend()
-          }}>Recommend</TabsTrigger> : 
-          
-          <div></div>
-          }
+          <TabsTrigger value="recommend">Recommend</TabsTrigger>
         </TabsList>
 
         <TabsContent value='recommend'>
+          <div className='flex items-center justify-content-center gap-2 mt-2 mb-5 w-full'>
+            
+            <Select value={method} onValueChange={setMethod}>
+              <SelectTrigger className="w-full md:w-[200px] bg-gray-200 border-0 shadow-md">
+                <SelectValue placeholder="Recommend by" />
+              </SelectTrigger>
+              <SelectContent className='bg-white border-0'>
+                <SelectItem value='cosine'>Cosine similarity</SelectItem>
+                <SelectItem value='content'>Content-based filtering</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <input type="text" placeholder='Top n...' className='bg-gray-200 border-0 p-1.5 shadow-md rounded-md w-fit'
+            name='top'
+            value={content.top}
+            onChange={handleChange}      
+            />
+          </div>
+
+          <button
+            disabled={disable}
+            className='mb-5 bg-gray-200 border-0 py-1.5 px-5 shadow-md rounded-md w-fit cursor-pointer font-semibold'
+            onClick={() => {
+              handleRecommend()
+            }}
+          >
+              Get list
+          </button>
+
+          {disable && 
+            <div className='flex items-center justify-content-center mt-2'>
+              Getting recommend list
+              <BeatLoader size={10}/>
+            </div>
+          }
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {recommend.length > 0 ? (
               recommend.map((recProduct,index) => (
@@ -393,9 +337,8 @@ const UserVirtual = () => {
 
               ))
             ) : (
-              <div className="gap-2 col-span-full text-center py-8 text-gray-500 flex items-center justify-content-center">
-                Getting recommend list
-                <BeatLoader size={10}/>
+              <div className="gap-2 col-span-full text-center py-8 text-red-500 font-bold flex items-center justify-content-center">
+                Content not available
               </div>
             )}
           </div>
