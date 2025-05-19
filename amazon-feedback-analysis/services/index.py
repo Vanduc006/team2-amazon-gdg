@@ -6,7 +6,7 @@ from flask_cors import CORS
 import tempfile
 import io
 import os
-from recommend import get_product_recommendations
+from recommend import get_product_recommendations, get_user_based_recommendations
 
 app = Flask(__name__)
 CORS(app, origins=[
@@ -90,6 +90,10 @@ def create_remmcommend():
         result = get_product_recommendations(product_id=product_id,csv_url=url,top_n=int(top_n))
         return result
         # return 'ok',200
+
+    if query == 'content' :
+        result = get_user_based_recommendations(product_id=product_id,csv_url=url,top_n=int(top_n))
+        return result
     return 400
 
 
