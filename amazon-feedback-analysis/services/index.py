@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from csv2json import csv2json, csv2json_string  # import từ file khác
 from supabase import create_client
 from flask_cors import CORS
@@ -7,6 +7,7 @@ import tempfile
 import io
 import os
 from recommend import get_product_recommendations, get_user_based_recommendations
+from scatter import generate_scatter_plot, plot_price_sentiment
 
 app = Flask(__name__)
 CORS(app, origins=[
@@ -96,6 +97,30 @@ def create_remmcommend():
         return result
     return 400
 
+@app.route('/scatter', methods=['POST'])
+def scatter_plot():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        buf = generate_scatter_plot(data)
+        return send_file(buf, mimetype='image/png')
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/price_sentiment', methods=['POST'])
+def violin_plot():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        plot_type = data[0].get('plot_type', 'box') if isinstance(data, list) and data else 'box'
+        buf = plot_price_sentiment(data, plot_type=plot_type)
+        return send_file(buf, mimetype='image/png')
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

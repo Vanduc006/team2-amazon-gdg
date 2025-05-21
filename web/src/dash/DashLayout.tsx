@@ -4,8 +4,9 @@ import { Menu, Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Link, Outlet } from 'react-router-dom'
 // import { Toaster } from "@/components/ui/sonner"
-
+import { useProductData } from './ProductContext'
 const DashLayout = () => {
+    const {parent} = useProductData()
     const [sidebarOpen, setSidebarOpen] = useState(false) 
   return (
     <div className='flex h-screen bg-gray-200 text-gray-900'>
@@ -75,7 +76,12 @@ const DashLayout = () => {
 
                 </div>
                 <div className="flex items-center font-bold">
-                    <span className="text-gray-500 text-lg">AMAZON ELECTRONICS ANALYSIS</span>
+                    {parent ?
+                        <span className="text-gray-500 text-lg">
+                            
+                            {parent}
+                        </span> : <div>No content</div>
+                    }
 
                 </div>
             </header>

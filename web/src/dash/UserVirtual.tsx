@@ -13,7 +13,7 @@ import { useProductData } from './ProductContext'
 import Recommend from '@/service/Recommend'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 // import { Card, CardContent } from '@/components/ui/card'
-
+import Review from './Review'
 
 const UserVirtual = () => {
   const { parent } = useProductData()
@@ -52,79 +52,7 @@ const UserVirtual = () => {
     product_link: string
   }
 
-  function Review({ data }: { data: ReviewData }) {
-    const userIDs = data.user_id.split(",");
-    const userNames = data.user_name.split(",");
-    const reviewTitles = data.review_title.split(",");
-    const reviewContents = data.review_content.split(",");
-    // const reviewIDs = data.review_id.split(",");
 
-    let ans = 0;
-    let maxDiff = 0;
-
-    // const userIdLen = userIDs.length;
-    // const reviewIdLen = reviewIDs.length;
-    const reviewTitleLen = reviewTitles.length;
-    // const reviewContentLen = reviewContents.length;
-    const userNameLen = userNames.length;
-    let mismatchIndex = 0;
-    mismatchIndex = 0
-    if (reviewTitleLen !== userNameLen) {
-      const diff = Math.abs(reviewTitleLen - userNameLen);
-      if (diff > maxDiff) {
-        maxDiff = diff;
-        mismatchIndex = 0; // vì chỉ có 1 data, luôn là 0
-      }
-      ans++;
-    }
-
-    // console.log("Số lượng lỗi length mismatch:", ans);
-    console.log(mismatchIndex)
-
-    if (ans > 0) {
-      console.log("Chiều dài review_title:", reviewTitles.length);
-      let count = 1;
-      for (const title of reviewTitles) {
-        const trimmed = title.trim();
-        if (trimmed.length > 0 && /^[A-Z]/.test(trimmed)) {
-          console.log(`${trimmed} - ${count}`);
-          count++;
-        }
-      }
-
-      console.log("=======================");
-      console.log("Chiều dài user_id:", userIDs.length);
-      // for (const uid of userIDs) {
-      //   console.log(uid);
-      // }
-    }
-
-    const reviews = userIDs.map((id, index) => ({
-      id,
-      name: userNames[index],
-      title: reviewTitles[index],
-      content: reviewContents[index],
-    }));
-
-    
-    return (
-      <div className="space-y-4 mt-4">
-        {reviews.map((review, index) => (
-          <div
-            key={index}
-            className="p-2 rounded-md bg-gray-200 shadow-md w-full"
-          >
-            {/* <div className="font-bold text-sm p-2 bg-blue-200 w-fit ml-auto rounded-md">
-              Badge : ???
-            </div> */}
-            <div className="font-semibold text-blue-600">{review.name}</div>
-            <div className="text-gray-800 font-medium">{review.title}</div>
-            <div className="text-sm text-gray-600">{review.content}</div>
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   const initReview = {
     username : "",
@@ -281,7 +209,7 @@ const UserVirtual = () => {
               recommend.map((recProduct,index) => (
                 <div
                   key={index}
-                  className="rounded-md overflow-hidden hover:shadow-md transition-shadow cursor-pointer bg-gray-200 border-0 p-2 shadow-md"
+                  className="w-fit mx-auto rounded-md overflow-hidden hover:shadow-md transition-shadow cursor-pointer bg-gray-200 border-0 p-2 shadow-md"
                   // onClick={() => router.push(`/product/${recProduct.product_id}`)}
                   onClick={() => {
                     setRecommend([])
@@ -292,7 +220,9 @@ const UserVirtual = () => {
                   <div className='text-sm font-bold px-2 rounded-md ml-auto w-fit bg-green-300 mb-1'>{recProduct.discount_percentage}%</div>
                   <img src="/placeholder.png" className='rounded-md' />
                   {/* <div className='font-medium text-sm line-camp-2'>{recProduct.product_id}</div> */}
-                  <h3 className="font-medium text-sm line-clamp-2 mb-1 mt-2">{recProduct.product_name}</h3>
+                  <h3 className="font-medium text-sm line-clamp-2 mb-1 mt-2 w-fit max-w-1/3 md:max-w-lg overflow-hidden">
+                    {recProduct.product_name}
+                  </h3>
                   <div className="flex items-center mb-2">
                       <StarRating initialRating={Number(recProduct.rating)} readOnly size="sm" />
                   </div>
