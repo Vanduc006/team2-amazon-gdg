@@ -336,7 +336,7 @@ const Product = () => {
     }))
 
     try {
-      const response = await fetch("http://localhost:5000/scatter", {
+      const response = await fetch("https://team2-amazon-gdg.onrender.com/scatter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -361,7 +361,7 @@ const Product = () => {
     }))
     
     try {
-      const response = await fetch("http://localhost:5000/price_sentiment", {
+      const response = await fetch("https://team2-amazon-gdg.onrender.com/price_sentiment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
