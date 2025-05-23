@@ -78,39 +78,84 @@ const ReviewSentiment = ({ data }: { data: ReviewData }) => {
     const [sentimentResults, setSentimentResults] = useState<{ [index: number]: string }>({})
     const [disableSentiment,setDisableSentiment] = useState<boolean>(false)
     
-    const handSentiment = async(content: string, index: number):Promise<any> => {
-      setDisableSentiment(true)
-        setSentimentResults(prev => ({
-          ...prev,
-          [index]: "process", // ví dụ response trả về { label: "Positive" }
-        }))
-      try {
-        const body = {
-          text : content,
-          reviewID: 'NULL',
-        }
-        const respone = await fetch('https://vanduc006--distilbert-sentiment-api-app.modal.run/predict',{
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body : JSON.stringify(body)
-        })
+    // const handSentiment = async(content: string, index: number):Promise<any> => {
+    //   setDisableSentiment(true)
+    //     setSentimentResults(prev => ({
+    //       ...prev,
+    //       [index]: "process", // ví dụ response trả về { label: "Positive" }
+    //     }))
+    //   try {
+    //     const body = {
+    //       text : content,
+    //       reviewID: 'NULL',
+    //     }
+    //     const respone = await fetch('https://vanduc006--distilbert-sentiment-api-app.modal.run/predict',{
+    //       method: 'POST',
+    //       headers: {
+    //         'Content-Type': 'application/json',
+    //       },
+    //       body : JSON.stringify(body)
+    //     })
 
-        const data = await respone.json()
+    //     const data = await respone.json()
 
-        setSentimentResults(prev => ({
-          ...prev,
-          [index]: data.label, // ví dụ response trả về { label: "Positive" }
-        }))
-      } catch (error) {
-        console.log("Failed to sentiment")
-      }
-      setDisableSentiment(false)
-    }
+    //     setSentimentResults(prev => ({
+    //       ...prev,
+    //       [index]: data.label,
+    //     }))
+    //   } catch (error) {
+    //     console.log("Failed to sentiment")
+    //   }
+    //   setDisableSentiment(false)
+    // }
     
+    const handleAllSentiments = async () => {
+      setDisableSentiment(true);
+
+      const promises = reviews.map(async (review, i) => {
+        setSentimentResults(prev => ({ ...prev, [i]: "process" }));
+
+        try {
+          const response = await fetch('https://vanduc006--distilbert-sentiment-api-app.modal.run/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: review.content, reviewID: 'NULL' }),
+          });
+
+          const data = await response.json();
+          return { index: i, label: data.label };
+        } catch {
+          return { index: i, label: "error" };
+        }
+      });
+
+      const results = await Promise.all(promises);
+
+      const resultMap: { [index: number]: string } = {};
+      results.forEach(({ index, label }) => {
+        resultMap[index] = label;
+      });
+
+      setSentimentResults(resultMap);
+      setDisableSentiment(false);
+    };
+
     return (
       <div className="space-y-4 mt-3 overflow-hidden">
+        <button
+          disabled={disableSentiment}
+          onClick={handleAllSentiments}
+          className="cursor-pointer text-sm font-semibold px-4 py-2 bg-gray-200 rounded-md mb-4"
+        >
+          {disableSentiment ?
+          <div className="flex items-center justify-content-center gap-2">
+            Getting setiments 
+            <BounceLoader size={15}/>
+          </div> 
+          : <div>Analyze {reviews.length} Sentiments</div>
+          }
+        </button>
+
         {reviews.map((review, index) => (
           <div
             key={index}
@@ -125,48 +170,50 @@ const ReviewSentiment = ({ data }: { data: ReviewData }) => {
               Badge : ???
             </div> */}
             <div>
-              <div className="font-semibold text-blue-600">{review.name}</div>
+              <div className="font-semibold text-blue-600 flex items-center justidy-content-center gap-2 w-full">
+                {review.name}
+                <div className="flex items-center justify-content-center gap-2 bg-gray-200 w-fit  rounded-md shadow-md px-5">
+                  {/* <button
+                    disabled={disableSentiment} 
+                    className="cursor-pointer text-sm font-semibold px-5 py-1 bg-gray-200 w-fit mt-1 rounded-md flex items-center justify-content-center"
+                    onClick={() => {
+                      handSentiment(review.content, index)
+                    }}
+                    >
+                      Sentiment this review
+                  </button> */}
+                  {sentimentResults[index] == "process" && (
+                    <div className="gap-2 text-sm font-medium text-yellow-600 flex items-center justify-content-center">
+                      Processing <BounceLoader size={15} />
+                    </div>
+                  )}
+
+                  {sentimentResults[index] == "positive" && (
+                    <div className="text-sm font-medium text-green-600">
+                      {sentimentResults[index]}
+                    </div>
+                  )}
+
+                  {sentimentResults[index] == "neutral" && (
+                    <div className="text-sm font-medium text-gray-600">
+                      {sentimentResults[index]}
+                    </div>
+                  )}
+
+                  {sentimentResults[index] == "negative" && (
+                    <div className="text-sm font-medium text-red-600">
+                      {sentimentResults[index]}
+                    </div>
+                  )}
+
+
+                </div>
+              </div>
               <div className="text-gray-800 font-medium">{review.title}</div>
               <div className="text-sm text-gray-600">{review.content}</div>
             </div>
           </div>
 
-          <div className="flex items-center justify-content-center gap-2">
-            <button
-              disabled={disableSentiment} 
-              className="cursor-pointer text-sm font-semibold px-5 py-1 bg-gray-200 w-fit mt-1 rounded-md flex items-center justify-content-center"
-              onClick={() => {
-                handSentiment(review.content, index)
-              }}
-              >
-                Sentiment this review
-            </button>
-            {sentimentResults[index] == "process" && (
-              <div className="gap-2 mt-1 text-sm font-medium text-yellow-600 flex items-center justify-content-center">
-                Processing <BounceLoader size={15} />
-              </div>
-            )}
-
-            {sentimentResults[index] == "positive" && (
-              <div className="mt-1 text-sm font-medium text-green-600">
-                {sentimentResults[index]}
-              </div>
-            )}
-
-            {sentimentResults[index] == "neutral" && (
-              <div className="mt-1 text-sm font-medium text-gray-600">
-                {sentimentResults[index]}
-              </div>
-            )}
-
-            {sentimentResults[index] == "negative" && (
-              <div className="mt-1 text-sm font-medium text-red-600">
-                {sentimentResults[index]}
-              </div>
-            )}
-
-
-          </div>
             
           </div>
         ))}
