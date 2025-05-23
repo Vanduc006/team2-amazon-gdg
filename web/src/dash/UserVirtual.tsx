@@ -71,23 +71,43 @@ const UserVirtual = () => {
 
 
   const handleSubmit = async () => {
+    const randomFiveDigit = Math.floor(10000 + Math.random() * 90000);
     if (content.username === "" || content.title === "" || content.content === "") {
       console.log('please full fill');
       alert("Please full fill all input box in form");
       return;
     }
-
+    console.log(randomFiveDigit)
     setDisable(true); 
 
     try {
-      const data = await NewFeedback(content.username, content.title, content.content, product?.product_id, userRating);
+      const data = await NewFeedback(content.username, content.title, content.content, product?.product_id, userRating, randomFiveDigit);
       console.log(data);
       alert("Send feedback success")
+
+      try {
+        const body = {
+          "text" : content.content,
+          "reviewID" : String(randomFiveDigit),
+        }
+        const respone = await fetch('https://vanduc006--distilbert-sentiment-api-app.modal.run/realtime', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body : JSON.stringify(body)
+        })
+        console.log(respone.json())
+        
+      } catch (error) {
+        
+      }
 
     } catch (error) {
       console.error("Error sending feedback:", error);
       alert("Failed to send feedback");
     }
+
 
     setDisable(false);
     setContent({

@@ -41,6 +41,7 @@ import { Popover } from '@radix-ui/react-popover'
 import { PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 // import Review from './Review'
 import ReviewSentiment from './ReviewSentiment'
+import { BounceLoader } from 'react-spinners'
 // import { toast } from "sonner"
 
 // import {
@@ -262,15 +263,17 @@ const Product = () => {
     const distribution: Record<string, number> = {}
     filteredProducts.forEach((product) => {
       if (product.category) {
-        const mainCategory = product.category.split("|")[0]
-        distribution[mainCategory] = (distribution[mainCategory] || 0) + 1
+        const categories = product.category.split("|")
+        // Lấy category theo level hiện tại, nếu không có thì lấy level 0
+        const cat = categories[level] || categories[0]
+        distribution[cat] = (distribution[cat] || 0) + 1
       }
     })
     return Object.entries(distribution).map(([category, count]) => ({
       name: category,
       value: count,
     }))
-  }, [filteredProducts])
+  }, [filteredProducts, level])
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82ca9d"]
 
@@ -328,13 +331,14 @@ const Product = () => {
   }, [featureProductID])
 
   //send discount_percentage, rating to API
+  const [disablePlot,setDisablePlot] = useState<boolean>(false)
   const [plotDiscountRating, setPlotDiscountRating] = useState<string>('')
   const handleSendDataDiscountRating = async () => {
     const payload = filteredProducts.map(product => ({
       discount_percentage: product.discount_percentage,
       rating: product.rating,
     }))
-
+    setDisablePlot(true)
     try {
       const response = await fetch("https://team2-amazon-gdg.onrender.com/scatter", {
         method: "POST",
@@ -351,6 +355,7 @@ const Product = () => {
     } catch (err) {
       console.error("Lỗi gửi dữ liệu:", err)
     }
+    setDisablePlot(false)
   }
 
   const [plotPriceSentiment, setPlotPriceSentiment] = useState<string>('')
@@ -359,7 +364,7 @@ const Product = () => {
       price: product.discounted_price,
       rating: product.rating,
     }))
-    
+    setDisablePlot(true)
     try {
       const response = await fetch("https://team2-amazon-gdg.onrender.com/price_sentiment", {
         method: "POST",
@@ -376,6 +381,7 @@ const Product = () => {
     } catch (err) {
       console.error("Lỗi gửi dữ liệu:", err)
     }
+    setDisablePlot(false)
   }
 
   return (
@@ -415,11 +421,24 @@ const Product = () => {
                         <div className='flex p-2 bg-yellow-200 rounded-md mt-2'>
                           <div className='font-mono font-bold text-sm'>Status process : </div>
                           {review.status == null ? 
-                            <div>Waiting respone</div> : <div></div>
+                            <div>Waiting respone</div> : 
+                            <div className=''>
+                              {review.status == "Processing" && (
+                                <div className='flex items-center justify-content-center text-green-600 font-bold gap-2'>
+                                  {review.status} <BounceLoader size={15}/>
+                                </div>
+                              )}
+
+                              {review.status == "Done" && (
+                                <div className='flex items-center justify-content-center text-green-600 font-bold'>
+                                  {review.status}
+                                </div>
+                              )}
+                            </div>
                           }
                         </div>
                         <div className='flex p-2 bg-yellow-200 rounded-md mt-2'>
-                          <div className='font-mono font-bold text-sm'>Model predict : </div>
+                          <div className='font-mono font-bold text-sm'>Sentiment : </div>
                           {review.predict}
                         </div>
                         <div className='font-mono text-gray-500 mt-2 flex items-center justify-content-center'>
@@ -965,7 +984,9 @@ const Product = () => {
 
       <div>
         { tab == 'pricing_discount' ?
-        <div onClick={() => {
+        <div 
+        className='cursor-pointer font-bold'
+        onClick={() => {
           if (plotDiscountRating) {
             console.log(1)
             URL.revokeObjectURL(plotDiscountRating)
@@ -977,24 +998,33 @@ const Product = () => {
       </div>
       {/* Charts */}
       <div>
-        {tab == 'pricing_discount' ? 
+        {tab == 'pricing_discount' ?
         <div>
           <Tabs defaultValue="ratings" className="mb-8 mt-8">
-            <TabsList className="mb-4">
-              <TabsTrigger value="ratings" >Ratings</TabsTrigger>
-              <TabsTrigger value="discounts">Discounts</TabsTrigger>
-              <TabsTrigger value="categories">Categories</TabsTrigger>
-              <TabsTrigger value='discount_rating'>Discount % and Rating</TabsTrigger>
-              <TabsTrigger value='price_sentiment'>Price and Sentiment</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto whitespace-nowrap">
+              <TabsList className="mb-4 min-w-max flex-nowrap">
+                <TabsTrigger value="ratings">Ratings</TabsTrigger>
+                <TabsTrigger value="discounts">Discounts</TabsTrigger>
+                <TabsTrigger value="categories">Categories</TabsTrigger>
+                <TabsTrigger value="discount_rating">Discount % and Rating</TabsTrigger>
+                <TabsTrigger value="price_sentiment">Price and Sentiment</TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value='discount_rating'>
-              <div className='bg-gray-200 px-5 py-2 rounded-md w-fit'
+              <button
+              disabled={disablePlot} 
+              className='gap-2 flex items-center justify-content-center bg-gray-200 px-5 py-2 rounded-md w-fit'
               onClick={() => {
                 handleSendDataDiscountRating()
               }}>
-                Get Plot
-              </div>
+                {disablePlot ? 
+                  <div className='flex gap-2 items-center justify-content-center'>
+                    Getting plot for you <BounceLoader size={15}></BounceLoader>
+                  </div> : <div>Get Plot</div>
+                }
+                
+              </button>
 
               {plotDiscountRating ?
               <div>
@@ -1004,12 +1034,19 @@ const Product = () => {
             </TabsContent>
 
             <TabsContent value='price_sentiment'>
-              <div className='bg-gray-200 px-5 py-2 rounded-md w-fit'
+              <button
+              disabled={disablePlot} 
+              className='gap-2 flex items-center justify-content-center bg-gray-200 px-5 py-2 rounded-md w-fit'
               onClick={() => {
                 handleSendDataPriceSentiment()
               }}>
-                Get Plot
-              </div>
+                {disablePlot ? 
+                  <div className='flex gap-2 items-center justify-content-center'>
+                    Getting plot for you <BounceLoader size={15}></BounceLoader>
+                  </div> : <div>Get Plot</div>
+                }
+                
+              </button>
 
               {plotPriceSentiment ?
               <div>
@@ -1071,27 +1108,35 @@ const Product = () => {
                   <CardDescription>Products by category</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={categoryDistribution}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={true}
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                          outerRadius={100}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {categoryDistribution.map((entry, index) => (
-
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} onClick={() => console.log(entry)}/>
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value) => [`${value} products`, "Count"]} />
-                      </PieChart>
-                    </ResponsiveContainer>
+                  <div className="h-[300px] flex items-center justify-center">
+                    {categoryDistribution.length === 1 ? (
+                      <div className="text-center text-lg font-semibold text-gray-500">
+                        <span className="text-blue-600">{categoryDistribution[0].name}</span> ({categoryDistribution[0].value} Products)
+                        
+                      </div>
+                    ) : (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={categoryDistribution}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={true}
+                            label={({ name, percent }) =>
+                              percent > 0.03 ? `${name}: ${(percent * 100).toFixed(0)}%` : ""
+                            }
+                            outerRadius={100}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {categoryDistribution.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} onClick={() => console.log(entry)}/>
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value) => [`${value} products`, "Percentage"]} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    )}
                   </div>
                 </CardContent>
               </Card>

@@ -20,11 +20,12 @@ export const NewFeedback = async(
   content: string, 
   productID: any,
   stars : number,
+  reviewID: number,
 
 ):Promise<any> => {
   const { data, error } = await supabase
   .from('review')
-  .insert({ username: username, title: title,content: content, productID: productID, stars: stars })
+  .insert({ username: username, title: title,content: content, productID: productID, stars: stars,reviewID: reviewID })
   if ( error ) {
     console.log(error.message)
     return data || []
