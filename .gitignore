@@ -1,8 +1,11 @@
 node_modules
 .venv
-.env
+
 amazon-feedback-analysis/services/distilbert-sentiment/config.json
 amazon-feedback-analysis/services/distilbert-sentiment/label2id.json
 amazon-feedback-analysis/services/distilbert-sentiment/model.safetensors
 amazon-feedback-analysis/services/distilbert-sentiment/special_tokens_map.json
 amazon-feedback-analysis/services/distilbert-sentiment/tokenizer_config.json
+
+distilbert-sentiment/
+
