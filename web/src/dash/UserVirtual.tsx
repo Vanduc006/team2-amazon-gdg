@@ -134,6 +134,7 @@ const UserVirtual = () => {
   const [recommend, setRecommend] = useState<any[]>([])
   const [method,setMethod] = useState<string>('cosine')
   const [tab,setTab] = useState<string>('review')
+  const [page,setPage] = useState<number>(1)
   
   // const [top_n,setTop_n] = useState<string>('')
   const navigate = useNavigate()
@@ -141,7 +142,7 @@ const UserVirtual = () => {
     if (productID && content.top !== '') {
       setDisable(true)
       try {
-        const data = await Recommend(method ,productID ,content.top , parent)
+        const data = await Recommend(method ,productID ,content.top , parent, page)
         setRecommend(data)
       } catch (error) {
         return error
@@ -197,6 +198,7 @@ const UserVirtual = () => {
               <SelectContent className='bg-white border-0'>
                 <SelectItem value='cosine'>Cosine similarity</SelectItem>
                 <SelectItem value='content'>Content-based filtering</SelectItem>
+                <SelectItem value='cluster'>Kmeans Cluster</SelectItem>
               </SelectContent>
             </Select>
 
@@ -224,36 +226,60 @@ const UserVirtual = () => {
             </div>
           }
 
+          {method == 'cluster' &&                     
+            <div className='my-2'>
+              You are at page {page} of Product Cluster
+            </div>
+          }
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            
             {recommend.length > 0 ? (
               recommend.map((recProduct,index) => (
-                <div
-                  key={index}
-                  className="w-fit mx-auto rounded-md overflow-hidden hover:shadow-md transition-shadow cursor-pointer bg-gray-200 border-0 p-2 shadow-md"
-                  // onClick={() => router.push(`/product/${recProduct.product_id}`)}
-                  onClick={() => {
-                    setRecommend([])
-                    setTab('review')
-                    navigate('/useremulator?product_id='+ recProduct.product_id + '&product_name='+ recProduct.product_name)
-                  }}
-                >
-                  <div className='text-sm font-bold px-2 rounded-md ml-auto w-fit bg-green-300 mb-1'>{recProduct.discount_percentage}%</div>
-                  <img src="/placeholder.png" className='rounded-md' />
-                  {/* <div className='font-medium text-sm line-camp-2'>{recProduct.product_id}</div> */}
-                  <h3 className="font-medium text-sm line-clamp-2 mb-1 mt-2 w-fit max-w-1/3 md:max-w-lg overflow-hidden">
-                    {recProduct.product_name}
-                  </h3>
-                  <div className="flex items-center mb-2">
-                      <StarRating initialRating={Number(recProduct.rating)} readOnly size="sm" />
+                <div>
+                  {method == 'cluster' ? 
+                  <div>
+                    <div 
+                    className="w-fit mx-auto rounded-md overflow-hidden hover:shadow-md transition-shadow cursor-pointer bg-gray-200 border-0 p-2 shadow-md"
+                    key={index}>
+                      <img src="/placeholder.png" className='rounded-md' />
+                      <h3 className="font-medium text-sm line-clamp-2 mb-1 mt-2 w-fit max-w-1/3 md:max-w-lg overflow-hidden">
+                        {recProduct}
+                      </h3>
+                      <div className='text-sm text-gray-500'>Maybe you like this product</div>
+                    </div>
                   </div>
+                  :
+                  <div>
+                    <div
+                      key={index}
+                      className="w-fit mx-auto rounded-md overflow-hidden hover:shadow-md transition-shadow cursor-pointer bg-gray-200 border-0 p-2 shadow-md"
+                      // onClick={() => router.push(`/product/${recProduct.product_id}`)}
+                      onClick={() => {
+                        setRecommend([])
+                        setTab('review')
+                        navigate('/useremulator?product_id='+ recProduct.product_id + '&product_name='+ recProduct.product_name)
+                      }}
+                    >
+                      <div className='text-sm font-bold px-2 rounded-md ml-auto w-fit bg-green-300 mb-1'>{recProduct.discount_percentage}%</div>
+                      <img src="/placeholder.png" className='rounded-md' />
+                      {/* <div className='font-medium text-sm line-camp-2'>{recProduct.product_id}</div> */}
+                      <h3 className="font-medium text-sm line-clamp-2 mb-1 mt-2 w-fit max-w-1/3 md:max-w-lg overflow-hidden">
+                        {recProduct.product_name}
+                      </h3>
+                      <div className="flex items-center mb-2">
+                          <StarRating initialRating={Number(recProduct.rating)} readOnly size="sm" />
+                      </div>
 
-                  <div className='flex items-center justify-content-center gap-2'>
-                    <div className='font-bold text-sm'>₹{recProduct.discounted_price}</div>
-                    <div className='text-sm text-gray-500 line-through'>₹{recProduct.actual_price}</div>
+                      <div className='flex items-center justify-content-center gap-2'>
+                        <div className='font-bold text-sm'>₹{recProduct.discounted_price}</div>
+                        <div className='text-sm text-gray-500 line-through'>₹{recProduct.actual_price}</div>
+                      </div>
+
+
+                  
+                    </div>
                   </div>
-
-
-              
+                  }
                 </div>
                 // <Card
                 //   key={recProduct.product_id}
@@ -291,7 +317,28 @@ const UserVirtual = () => {
                 Content not available
               </div>
             )}
+            
           </div>
+          {method == 'cluster' &&
+            <div className='flex w-full mt-5'>
+              {page !== 1 && 
+                <div className='px-5 py-1 bg-gray-200 shadow-md rounded-md w-fit cursor-pointer'
+                onClick={() => {
+                  setPage(p => p-1)
+                  handleRecommend()
+                }}
+                >Previous</div>
+              }
+              <div className='px-5 py-1 bg-gray-200 shadow-md rounded-md w-fit ml-auto cursor-pointer'
+                onClick={() => {
+                  setPage(p => p+1)
+                  console.log(page)
+
+                  handleRecommend()
+                }}
+              >Next</div>
+            </div>
+          }
         </TabsContent>
         <TabsContent value='review'>
           {product && 
