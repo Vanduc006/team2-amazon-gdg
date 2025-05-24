@@ -317,18 +317,18 @@ const Product = () => {
   const [tab,setTab] = useState<string>('product_performance')
   const [featureProductID, setFeatureProductID] =  useState<string>('')
   const [featureProductName, setFeatureProductName] =  useState<string>('')
-  console.log(featureProductName)
+  // console.log(featureProductName)
   const featureOnProduct = useMemo(() => {
     if (!featureProductID && tab == 'customer_sentiment') {
       // alert('You need select product to see this Tab')
-      return (
-        <div></div>
-      )
+      return null
     }
+
     return testData.find((product) =>
       product.product_id.toLowerCase().includes(featureProductID.toLowerCase())
     )
-  }, [featureProductID])
+
+  }, [featureProductID,tab,testData])
 
   //send discount_percentage, rating to API
   const [disablePlot,setDisablePlot] = useState<boolean>(false)
@@ -972,6 +972,15 @@ const Product = () => {
       <div>
         {tab == "customer_sentiment" && featureProductID ? 
         <div>
+          <div className='font-bold text-black items-center justify-content-center gap-2'>
+            <div className='text-gray-500 flex'>[ {featureProductID} ] </div>
+            {featureProductName}
+          </div>
+          <div className='flex items-center justify-content-center gap-2'>
+            <div className='font-bold'>{featureOnProduct?.rating}</div>
+            <StarRating size='sm' readOnly initialRating={Number(featureOnProduct?.rating)}/>
+
+          </div>
           <ReviewSentiment data={featureOnProduct as ReviewData}/>
         </div> : 
         

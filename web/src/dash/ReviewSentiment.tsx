@@ -152,7 +152,7 @@ const ReviewSentiment = ({ data }: { data: ReviewData }) => {
             Getting setiments 
             <BounceLoader size={15}/>
           </div> 
-          : <div>Analyze {reviews.length} Sentiments</div>
+          : <div>Analyze {reviews.length} Customer Feedback</div>
           }
         </button>
 
