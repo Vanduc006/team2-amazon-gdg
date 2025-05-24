@@ -6,7 +6,7 @@ from flask_cors import CORS
 import tempfile
 import io
 import os
-from recommend import get_product_recommendations, get_user_based_recommendations
+from recommend import get_product_recommendations, get_user_based_recommendations, get_product_cluster
 from scatter import generate_scatter_plot, plot_price_sentiment
 
 app = Flask(__name__)
@@ -87,6 +87,7 @@ def create_remmcommend():
     product_id = request.args.get('product_id')
     top_n = request.args.get('top')
     url = request.args.get('url')
+    
     if query == 'cosine' :
         result = get_product_recommendations(product_id=product_id,csv_url=url,top_n=int(top_n))
         return result
@@ -94,6 +95,10 @@ def create_remmcommend():
 
     if query == 'content' :
         result = get_user_based_recommendations(product_id=product_id,csv_url=url,top_n=int(top_n))
+        return result
+    if query == 'cluster' :
+        page = request.args.get('page')
+        result = get_product_cluster(product_id=product_id,page=page)
         return result
     return 400
 

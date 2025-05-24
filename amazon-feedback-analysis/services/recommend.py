@@ -7,6 +7,7 @@ import re
 import requests
 from io import StringIO
 from collections import defaultdict
+from typing import List
 
 def clean_price(price_str):
     """
@@ -20,6 +21,36 @@ def clean_price(price_str):
         return float(cleaned)
     except ValueError:
         return 0.0
+    
+def get_product_cluster(product_id=None,page: int = 1, page_size: int = 10) -> List[str]:
+    respone = requests.get('https://wblqskhiwsfjvxqhnpqg.supabase.co/storage/v1/object/public/json//amazon-kmeans-clusters.json')
+    data = respone.json()
+
+    product_ids_dict = data["product_id"]
+    clusters_dict = data["kmeans_cluster"]
+
+    # Sort keys để đảm bảo thứ tự chính xác
+    sorted_keys = sorted(product_ids_dict.keys(), key=lambda x: int(x))
+    product_ids = [product_ids_dict[k] for k in sorted_keys]
+    clusters = [clusters_dict[k] for k in sorted_keys]
+
+    # Tìm cluster của sản phẩm input
+    try:
+        index = product_ids.index(product_id)
+        target_cluster = clusters[index]
+    except ValueError:
+        return []  # product_id không tồn tại
+
+    # Lấy tất cả sản phẩm cùng cluster (không lặp chính nó)
+    similar_products = [
+        pid for pid, cl in zip(product_ids, clusters)
+        if cl == target_cluster and pid != product_id
+    ]
+
+    # Phân trang
+    start = (int(page) - 1) * int(page_size)
+    end = start + int(page_size)
+    return similar_products[start:end]
 
 def get_product_recommendations(product_id=None, product_name=None, top_n=5, csv_url=None):
     """
