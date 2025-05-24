@@ -77,4 +77,6 @@ def keep_ascii_alnum(text):
     
     return str(cleaned)
 
-
+def lemmatize_text(text):
+    doc = nlp(text)
+    return " ".join([token.lemma_ for token in doc])
