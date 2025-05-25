@@ -25,6 +25,8 @@ Detailed documentation: [GDG_Team2_Doc](https://hackmd.io/@h7yHNbu-RVqPJ6yR0D2Kx
 - **Deployment**: Vercel (Frontend), Render (Backend)
 
 ## 📂 Code structure
+The dataset can be found at folder `data`
+
 The implementation can be found in each coressponding folder for tasks.
 1. Data cleaning and Preprocessing
 2. Exploratory Data Analysis (EDA)
