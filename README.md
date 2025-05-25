@@ -2,6 +2,7 @@
 
 A comprehensive system for analyzing Amazon electronics customer feedback data, featuring EDA, predictive modeling, clustering, sentiment analysis, and recommendation systems.
 We suggest you to check our website: [GDG_Team2_Website](https://team2-amazon-gdg.vercel.app/)
+
 A full tutorial to the website can be found at: [GDG_Team2_Tutorial](https://drive.google.com/file/d/1SfrQ133PhjvsT3mR5t586bCiGah5yr3p/view?fbclid=IwY2xjawKf3xhleHRuA2FlbQIxMAABHtGUr3AhzpNcLQOwtkOyIyMxH_iByH8oZTluupq_ZetnXSTtn7Ega92p4b_6_aem_3h2IDz2PpWOLXmjyhSkfag)
 
 Detailed documentation: [GDG_Team2_Doc](https://hackmd.io/@h7yHNbu-RVqPJ6yR0D2Kxw/S1EI88JGee)
