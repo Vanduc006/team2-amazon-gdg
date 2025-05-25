@@ -246,7 +246,8 @@ const ReviewSentiment = ({ data }: { data: ReviewData }) => {
             </div>
           </div>
 
-          <div
+          <button
+          disabled={disableSummary}
           className="cursor-pointer bg-gray-200 px-2 mt-1 py-1 rounded-md w-fit text-sm flex "
           onClick={() => {
             handleSummary(index, review.content,'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')
@@ -262,7 +263,7 @@ const ReviewSentiment = ({ data }: { data: ReviewData }) => {
                   }
               </div>
             )}
-          </div>
+          </button>
 
             
           </div>
