@@ -412,7 +412,14 @@ const Product = () => {
                       
                       <div className="font-semibold text-blue-600 flex">
                         {review.username}
-                        <div className='ml-auto text-gray-500'>{review.productID}</div>
+                        <div 
+                        className='ml-auto text-gray-500 cursor-pointer'
+                        onClick={() => {
+                          setFeatureProductID(review.productID)
+                          setTab('customer_sentiment')
+
+                        }}
+                        >{review.productID}</div>
                       </div>
                       <div className="text-gray-800 font-medium">{review.title}</div>
                       <div className="text-sm text-gray-600">{review.content}</div>

@@ -77,7 +77,37 @@ const ReviewSentiment = ({ data }: { data: ReviewData }) => {
 
     const [sentimentResults, setSentimentResults] = useState<{ [index: number]: string }>({})
     const [disableSentiment,setDisableSentiment] = useState<boolean>(false)
-    
+    const [summaryResults, setSummaryResults] = useState<{ [index: number]: string }>({})
+    const [disableSummary,setDisableSummary] = useState<boolean>(false)
+    const handleSummary = async(index: number,content : string, key: string):Promise<any> => {
+      setDisableSummary(true)
+      setSummaryResults(prev => ({
+          ...prev,
+          [index]: 'process',
+      }))
+      try {
+        const body = {
+          text: content,
+          key: key,
+        }
+        const respone = await fetch('https://team2-amazon-gdg.onrender.com/summary',{
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body)
+        })
+
+        const data = await respone.json()
+        setSummaryResults(prev => ({
+          ...prev,
+          [index]: data,
+        }))
+      } catch (error) {
+        console.log('failed summary')
+      }
+      setDisableSummary(false)
+    }
     // const handSentiment = async(content: string, index: number):Promise<any> => {
     //   setDisableSentiment(true)
     //     setSentimentResults(prev => ({
@@ -139,6 +169,8 @@ const ReviewSentiment = ({ data }: { data: ReviewData }) => {
       setSentimentResults(resultMap);
       setDisableSentiment(false);
     };
+
+
 
     return (
       <div className="space-y-4 mt-3 overflow-hidden">
@@ -212,6 +244,24 @@ const ReviewSentiment = ({ data }: { data: ReviewData }) => {
               <div className="text-gray-800 font-medium">{review.title}</div>
               <div className="text-sm text-gray-600">{review.content}</div>
             </div>
+          </div>
+
+          <div
+          className="cursor-pointer bg-gray-200 px-2 mt-1 py-1 rounded-md w-fit text-sm flex "
+          onClick={() => {
+            handleSummary(index, review.content,'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')
+          }}
+          >Summary this 
+            {summaryResults[index] && (
+              <div className="text-green-600 text-sm flex">
+                {summaryResults[index] == "process" ?
+                    <div className="ml-2 text-sm font-medium text-yellow-600 flex items-center justify-content-center">
+                      Processing <BounceLoader size={15} />
+                    </div> 
+                    : <div className="ml-2">{summaryResults[index]}</div>
+                  }
+              </div>
+            )}
           </div>
 
             
