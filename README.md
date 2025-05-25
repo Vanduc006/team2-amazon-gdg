@@ -27,8 +27,7 @@ A comprehensive system for analyzing Amazon electronics customer feedback data, 
 
 ### Installation
 ```bash
-git clone https://github.com/GDG-Team-2/amazon-feedback-analysis.git
-cd amazon-feedback-analysis
+git clone https://github.com/Vanduc006/team2-amazon-gdg.git
 
 # Install dependencies
 pip install -r requirements.txt  # Backend
