@@ -340,7 +340,7 @@ const Product = () => {
     }))
     setDisablePlot(true)
     try {
-      const response = await fetch("https://team2-amazon-gdg.onrender.com/scatter", {
+      const response = await fetch("https://team2-amazon-gdg-fov6.onrender.com/scatter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -366,7 +366,7 @@ const Product = () => {
     }))
     setDisablePlot(true)
     try {
-      const response = await fetch("https://team2-amazon-gdg.onrender.com/price_sentiment", {
+      const response = await fetch("https://team2-amazon-gdg-fov6.onrender.com/price_sentiment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

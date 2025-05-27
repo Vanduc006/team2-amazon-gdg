@@ -90,7 +90,7 @@ const ReviewSentiment = ({ data }: { data: ReviewData }) => {
           text: content,
           key: key,
         }
-        const respone = await fetch('https://team2-amazon-gdg.onrender.com/summary',{
+        const respone = await fetch('https://team2-amazon-gdg-fov6.onrender.com/summary',{
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

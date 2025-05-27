@@ -1,0 +1,249 @@
+{
+	"info": {
+		"_postman_id": "68c96ceb-2120-405b-bee1-e0dfb791420a",
+		"name": "GDG",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29649265"
+	},
+	"item": [
+		{
+			"name": "csv2json",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/home/ducnv/Desktop/team2-amazon-gdg/amazon-feedback-analysis/services/amazon.csv"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://{{url}}/convert",
+					"protocol": "http",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"convert"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Recommend - cosine + content",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "http://{{url}}/recommend?method=content&product_id=B07JW9H4J1&top=1&url=https://wblqskhiwsfjvxqhnpqg.supabase.co/storage/v1/object/public/csv//amazon.csv",
+					"protocol": "http",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"recommend"
+					],
+					"query": [
+						{
+							"key": "method",
+							"value": "content"
+						},
+						{
+							"key": "product_id",
+							"value": "B07JW9H4J1"
+						},
+						{
+							"key": "top",
+							"value": "1"
+						},
+						{
+							"key": "url",
+							"value": "https://wblqskhiwsfjvxqhnpqg.supabase.co/storage/v1/object/public/csv//amazon.csv"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Plot",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n  {\"price\": \"₹176.63\", \"rating\": \"4.5\"},\n  {\"price\": \"$200.00\", \"rating\": \"3.2\"},\n  {\"price\": \"150\", \"rating\": \"2.8\"}\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{url}}/price_sentiment",
+					"protocol": "http",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"price_sentiment"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Setiment",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"text\": \"good product.\",\n    \"reviewID\" : \"88878\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://vanduc006--distilbert-sentiment-api-app.modal.run/predict",
+					"protocol": "https",
+					"host": [
+						"vanduc006--distilbert-sentiment-api-app",
+						"modal",
+						"run"
+					],
+					"path": [
+						"predict"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Recommend - cluster",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://{{url}}/recommend?method=cluster&product_id=B08CF3B7N1",
+					"protocol": "http",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"recommend"
+					],
+					"query": [
+						{
+							"key": "method",
+							"value": "cluster"
+						},
+						{
+							"key": "product_id",
+							"value": "B08CF3B7N1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Summary",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"text\": \"Great product! Exactly as described. Fast shipping and well-packaged. Would definitely buy again!\",\n    \"key\": \"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\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{url}}/summary",
+					"protocol": "http",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"summary"
+					]
+				},
+				"description": "The endpoint `http://{{url}}/summary` is a POST request that takes in a payload with a raw request body type. The payload should include a `text` parameter containing the text for summarization and a `key` parameter for authentication. Upon successful execution, the response will be in JSON format.\n\n### Response\n\nThe response of this request can be documented as a JSON schema."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "127.0.0.1:5000",
+			"type": "default"
+		}
+	]
+}

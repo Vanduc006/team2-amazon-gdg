@@ -15,7 +15,7 @@ const Recommend = async (
   params.append('page',String(page))
 
   const response = await fetch(
-    "https://team2-amazon-gdg.onrender.com/recommend?" + params.toString(),
+    "https://team2-amazon-gdg-fov6.onrender.com/recommend?" + params.toString(),
     {
       method: 'POST',
       headers: {
